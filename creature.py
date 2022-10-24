@@ -1,18 +1,25 @@
-from math import sqrt
+from math import pi, sqrt
+from random import randint, random
 g = 9.81 # m / s**2
 maximumEnergy = 200 # Joules
 
 # Experimental Values
-mass = 2.5 # kg
+density = 0.0005        # creature density in kg / m^3
 frictionCoeff = 0.05 # unitless, basically percentage of gravitational force applied against kinetic movement
 startingEnergy = 50 # Joules ( N * m)
 
 class Creature():
     # Creature parameters used across multiple time steps
     energy = startingEnergy
-    x = 0; y = 300            # start creature low for testing force and friction
     velX = 0; velY = 0
     outOfEnergy = 0
+
+    def __init__(self, size, maxX, maxY):
+        self.size = size # creature size in meters
+        self.maxX = maxX # max X in meters
+        self.maxY = maxY # max Y in meters
+        self.x = randint(0, maxX)           # will eventually want to ensure creatures are not starting within each other
+        self.y = randint(0, maxY)
 
     def timeStep(self, deltaTime):
         # Testing CHANGE APPLIED FORCE TO BE RANDOMIZED EVENTUALLY
@@ -21,6 +28,9 @@ class Creature():
         else:
             appliedForceX = 0; appliedForceY = 0 # applied force is none if out of energy
         
+        # Calculate Friction Force
+
+        mass = (4 * pi * (self.size / 2)**3 * density) / 3
         frictionForce = frictionCoeff * mass * g # constant currently
 
         if (sqrt(self.velX**2 + self.velY**2) == 0):
@@ -52,7 +62,21 @@ class Creature():
 
         oldX = self.x; oldY = self.y                                # Record old positions for energy usage calculation
         self.x = self.x + self.velX * deltaTime                     # Update position according to velocity
-        self.y = self.y + self.velY * deltaTime    
+        self.y = self.y + self.velY * deltaTime
+
+        if self.x - self.size / 2 < 0:   # x axis boundary hit, reduce acceleration and velocity to 0
+            self.x = self.size / 2
+            self.velX = 0; accX = 0
+        elif self.x + self.size / 2 > self.maxX:
+            self.x = self.maxX - self.size / 2
+            self.velX = 0; accX = 0
+        
+        if self.y - self.size / 2 < 0:   # y axis boundary hit, reduce acceleration and velocity to 0
+            self.x = self.size / 2
+            self.velY = 0; accY = 0
+        elif self.y + self.size / 2 > self.maxY:
+            self.y = self.maxY - self.size / 2
+            self.velY = 0; accY = 0
         
         if not self.outOfEnergy:            # Calculate energy used and determine if out of energy
             self.energy = self.energy - abs(self.x - oldX) * abs(forceX) - abs(self.y - oldY) * abs(forceY)

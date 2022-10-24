@@ -12,13 +12,13 @@ class Simulation():
         self.totalTimeSteps = math.ceil(simulationTime / deltaTime) # Number of time steps to be simulated
 
         self.generateCreatures()
-        self.runTimeStep(5)
+        self.runTimeStep(15)
         #self.completeSimulation()
     
 
     def generateCreatures(self):
         for i in range(self.creatureCount):
-            self.creatures.append(Creature())
+            self.creatures.append(Creature(size=20, maxX=400, maxY=400))
 
     def runTimeStep(self, numberOfSteps=1):
         stopTimeStep = self.timeStep + numberOfSteps
