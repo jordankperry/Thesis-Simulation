@@ -1,5 +1,6 @@
 g = 9.81 # m / s^2
 maximumEnergy = 200 # Joules
+creatures = [] # List of all creatures
 
 # Experimental Values
 mass = 2.5 # kg
@@ -23,20 +24,37 @@ class Creature():
             appliedForceX = 0; appliedForceY = 0 # applied force is none if out of energy
         
         frictionForce = frictionCoeff * mass * g # 0.05 * 10 kg * 9.81 m / s^2 = 0.4905 N
-        
-        if (abs(appliedForceX) < frictionForce):
-            forceX = -frictionForce if self.velX > 0 else frictionForce  # Apply friction against velocity direction
-        else:
-            forceX = appliedForceX - frictionForce if appliedForceX > 0 else appliedForceX + frictionForce  # Take away friction force
+
+        if (abs(self.velX) + abs(self.velY) == 0):
+            fXpercent = 0; fYpercent = 0        # No friction if no movement
+        else: # approximations for partial friction applied to x vs y forces
+            fXpercent = abs(self.velX) / (abs(self.velX) + abs(self.velY))
+            fYpercent = 1-fXpercent
+
+        if (abs(appliedForceX) < frictionForce): # Apply friction against velocity direction (overestimate)
+            forceX = -frictionForce if self.velX > 0 else frictionForce
+        else:  # Take away friction force if overpowering applied force
+            forceX = appliedForceX - frictionForce * fXpercent if appliedForceX > 0 else appliedForceX + frictionForce * fXpercent
             
-        if (abs(appliedForceY) < frictionForce):
-            forceY = -frictionForce if self.velY > 0 else frictionForce  # Apply friction against velocity direction
-        else:
-            forceY = appliedForceY - frictionForce if appliedForceY > 0 else appliedForceY + frictionForce  # Take away friction force
+        if (abs(appliedForceY) < frictionForce): # Apply friction against velocity direction
+            forceY = -frictionForce if self.velY > 0 else frictionForce
+        else:  # Take away friction force if overpowering applied force
+            forceY = appliedForceY - frictionForce * fYpercent if appliedForceY > 0 else appliedForceY + frictionForce * fYpercent
         
         accX = forceX / mass; accY = forceY / mass                  # Calculate acceleration from force and mass
+        
+        if (abs(self.velX) <= frictionForce * deltaTime / mass and abs(forceX) == frictionForce):
+            self.velX = 0                     # Prevent velocity oscillations around 0 when no applied force overpowering friction
+            accX = 0
+        if (abs(self.velY) <= frictionForce * deltaTime / mass and abs(forceY) == frictionForce):
+            self.velY = 0                     # Prevent velocity oscillations around 0 when no applied force overpowering friction
+            accY = 0
+            
         self.velX = accX * deltaTime + self.velX                    # Determine new velocities according to accelerations
         self.velY = accY * deltaTime + self.velY
+
+
+
         oldX = self.x; oldY = self.y                                # Record old positions for energy usage calculation
         self.x = self.x + self.velX * deltaTime                     # Update position according to velocity
         self.y = self.y + self.velY * deltaTime    
@@ -50,8 +68,8 @@ class Creature():
 
 
 
-c = Creature() # Create test creature and output distance traveled at each time step
+creatures.append(Creature()) # Create test creature and output distance traveled at each time step
 
 for i in range(200):
-    print("Time passed: ", i / 10, "s y pos: ", c.y, " vel:", c.velY, " Energy: ", c.energy, sep='')
-    c.timeStep()
+    print("Time passed: ", i / 10, "s y pos: ", creatures[0].y, " vel:", creatures[0].velY, " Energy: ", creatures[0].energy, sep='')
+    creatures[0].timeStep()
