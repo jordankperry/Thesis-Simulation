@@ -1,1 +1,3 @@
-__pycache__/creature.cpython-39.pyc
+__pycache__/
+*.py[cod]
+*$py.class
