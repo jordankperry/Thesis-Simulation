@@ -1,12 +1,10 @@
 g = 9.81 # m / s^2
 maximumEnergy = 200 # Joules
-creatures = [] # List of all creatures
 
 # Experimental Values
 mass = 2.5 # kg
 frictionCoeff = 0.05 # unitless, basically percentage of gravitational force applied against kinetic movement
 startingEnergy = 50 # Joules ( N * m)
-deltaTime = 0.1 # increment of time used for simulation in seconds
 
 class Creature():
     # Creature parameters used across multiple time steps
@@ -15,9 +13,8 @@ class Creature():
     velX = 0; velY = 0
     outOfEnergy = 0
 
-
-    def timeStep(self):
-        # Testing
+    def timeStep(self, deltaTime):
+        # Testing CHANGE APPLIED FORCE TO BE RANDOMIZED EVENTUALLY
         if not self.outOfEnergy:
             appliedForceX = 0; appliedForceY = 5 # applied force in Newtons
         else:
@@ -63,11 +60,3 @@ class Creature():
             if self.energy <= 0:
                 self.outOfEnergy = 1
                 self.energy = 0
-
-
-
-creatures.append(Creature()) # Create test creature and output distance traveled at each time step
-
-for i in range(200):
-    print("Time passed: ", i / 10, "s y pos: ", creatures[0].y, " vel:", creatures[0].velY, " Energy: ", creatures[0].energy, sep='')
-    creatures[0].timeStep()
