@@ -42,7 +42,7 @@ class Creature():
             forceY = appliedForceY - frictionForce * fYpercent if appliedForceY > 0 else appliedForceY + frictionForce * fYpercent
         
         accX = forceX / mass; accY = forceY / mass                  # Calculate acceleration from force and mass
-        
+
         if (abs(self.velX) <= frictionForce * deltaTime / mass and abs(forceX) == frictionForce):
             self.velX = 0                     # Prevent velocity oscillations around 0 when no applied force overpowering friction
             accX = 0
@@ -53,13 +53,11 @@ class Creature():
         self.velX = accX * deltaTime + self.velX                    # Determine new velocities according to accelerations
         self.velY = accY * deltaTime + self.velY
 
-
-
         oldX = self.x; oldY = self.y                                # Record old positions for energy usage calculation
         self.x = self.x + self.velX * deltaTime                     # Update position according to velocity
         self.y = self.y + self.velY * deltaTime    
         
-        if not self.outOfEnergy:
+        if not self.outOfEnergy:            # Calculate energy used and determine if out of energy
             self.energy = self.energy - abs(self.x - oldX) * abs(forceX) - abs(self.y - oldY) * abs(forceY)
 
             if self.energy <= 0:
