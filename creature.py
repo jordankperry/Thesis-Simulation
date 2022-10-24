@@ -1,3 +1,4 @@
+from math import sqrt
 g = 9.81 # m / s^2
 maximumEnergy = 200 # Joules
 
@@ -20,23 +21,22 @@ class Creature():
         else:
             appliedForceX = 0; appliedForceY = 0 # applied force is none if out of energy
         
-        frictionForce = frictionCoeff * mass * g # 0.05 * 10 kg * 9.81 m / s^2 = 0.4905 N
+        frictionForce = frictionCoeff * mass * g # constant currently
 
-        if (abs(self.velX) + abs(self.velY) == 0):
+        if (sqrt(self.velX^2 + self.velY^2) == 0):
             fXpercent = 0; fYpercent = 0        # No friction if no movement
-        else: # approximations for partial friction applied to x vs y forces
-            fXpercent = abs(self.velX) / (abs(self.velX) + abs(self.velY))
-            fYpercent = 1-fXpercent
-
-        if (abs(appliedForceX) < frictionForce): # Apply friction against velocity direction (overestimate)
-            forceX = -frictionForce if self.velX > 0 else frictionForce
-        else:  # Take away friction force if overpowering applied force
-            forceX = appliedForceX - frictionForce * fXpercent if appliedForceX > 0 else appliedForceX + frictionForce * fXpercent
+        else: # exact equations for partial percentage of friction applied to x vs y directions (sign always against velocity in that direction)
+            fXpercent = self.velX^2 / (self.velX^2 + self.velY^2) if self.velX > 0 else -(self.velX^2 / (self.velX^2 + self.velY^2))
+            fYpercent = self.velY^2 / (self.velX^2 + self.velY^2) if self.velY > 0 else -(self.velY^2 / (self.velX^2 + self.velY^2))
+        if (abs(appliedForceX) < frictionForce): # Apply friction against velocity direction (according to sign of fXpercent)
+            forceX = -frictionForce * fXpercent
+        else:  # Take away friction force against velocity direction if overpowering applied force
+            forceX = appliedForceX - frictionForce * fXpercent
             
-        if (abs(appliedForceY) < frictionForce): # Apply friction against velocity direction
-            forceY = -frictionForce if self.velY > 0 else frictionForce
-        else:  # Take away friction force if overpowering applied force
-            forceY = appliedForceY - frictionForce * fYpercent if appliedForceY > 0 else appliedForceY + frictionForce * fYpercent
+        if (abs(appliedForceY) < frictionForce): # Apply friction against velocity direction (according to sign of fYpercent)
+            forceY = -frictionForce * fYpercent
+        else:  # Take away friction force against velocity direction if overpowering applied force
+            forceY = appliedForceY - frictionForce * fYpercent
         
         accX = forceX / mass; accY = forceY / mass                  # Calculate acceleration from force and mass
 
