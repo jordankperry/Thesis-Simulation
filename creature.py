@@ -1,5 +1,5 @@
 from math import sqrt
-g = 9.81 # m / s^2
+g = 9.81 # m / s**2
 maximumEnergy = 200 # Joules
 
 # Experimental Values
@@ -23,11 +23,11 @@ class Creature():
         
         frictionForce = frictionCoeff * mass * g # constant currently
 
-        if (sqrt(self.velX^2 + self.velY^2) == 0):
+        if (sqrt(self.velX**2 + self.velY**2) == 0):
             fXpercent = 0; fYpercent = 0        # No friction if no movement
         else: # exact equations for partial percentage of friction applied to x vs y directions (sign always against velocity in that direction)
-            fXpercent = self.velX^2 / (self.velX^2 + self.velY^2) if self.velX > 0 else -(self.velX^2 / (self.velX^2 + self.velY^2))
-            fYpercent = self.velY^2 / (self.velX^2 + self.velY^2) if self.velY > 0 else -(self.velY^2 / (self.velX^2 + self.velY^2))
+            fXpercent = self.velX**2 / (self.velX**2 + self.velY**2) if self.velX > 0 else -(self.velX**2 / (self.velX**2 + self.velY**2))
+            fYpercent = self.velY**2 / (self.velX**2 + self.velY**2) if self.velY > 0 else -(self.velY**2 / (self.velX**2 + self.velY**2))
         if (abs(appliedForceX) < frictionForce): # Apply friction against velocity direction (according to sign of fXpercent)
             forceX = -frictionForce * fXpercent
         else:  # Take away friction force against velocity direction if overpowering applied force
