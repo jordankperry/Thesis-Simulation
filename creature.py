@@ -1,5 +1,9 @@
+from __future__ import annotations
 from math import pi, sqrt
 from random import randint, random
+from typing import List, Union
+
+from fruit import Fruit
 g = 9.81 # m / s**2
 maximumEnergy = 500 # Joules
 
@@ -13,7 +17,7 @@ class Creature():
 
 
 
-    def __init__(self, size, maxX, maxY):
+    def __init__(self, size: int, maxX: int, maxY: int):
         # Simulation variables
         self.maxX = maxX # max X position in meters
         self.maxY = maxY # max Y position in meters
@@ -33,19 +37,7 @@ class Creature():
         self.appX = (random() - .5) * 10
         self.appY = (random() - .5) * 10
 
-    def getReducedEnergy(self, predatorAggressiveness):
-        aggDiff = predatorAggressiveness - self.aggressiveness
-
-        if abs(aggDiff) != aggDiff:
-            while (1):
-                print("Energy difference negative - check for errors")
-
-        # equation below means higher predator aggressiveness -> higher energy returned (since higher aggressiveness -> higher aggDiff)
-        # and also higher aggressivness difference -> higher energy returned
-        # Ex. aggDiff = 1: energy returned=100%, aggDiff = 0: energyReturned=50% (Note: aggDiff should never = 0 exactly)
-        return self.energy * aggDiff + self.energy * (1 - aggDiff) / 2
-
-    def timeStep(self, deltaTime):
+    def timeStep(self, deltaTime: float):
         # Testing CHANGE APPLIED FORCE TO BE RANDOMIZED EVENTUALLY
         if not self.outOfEnergy:
             appliedForceX = self.appX; appliedForceY = self.appY # applied force in Newtons
@@ -121,11 +113,74 @@ class Creature():
                 self.outOfEnergy = 1
                 self.energy = 0
 
-    def x1(self):
+    def findNearestThreats(self, creatures: List[Creature]) -> List[Creature]:
+        threats = []
+
+        for possibleThreat in (c for c in creatures if c.aggressiveness > self.aggressiveness):
+            # Calculate threat level from distance and aggressiveness difference
+            threatLevel = sqrt((possibleThreat.x - self.x)^2 + (possibleThreat.y - self.y)^2) * (possibleThreat.aggressiveness - self.aggressiveness)
+            threatIndex = 0
+
+            # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
+            for i in range(len(threats)):
+                if threatLevel > threats[i]:
+                    break
+                else:
+                    i += 1
+            threats.insert(threatIndex, possibleThreat)
+        
+        return threats
+
+    def findNearestTargets(self, creatures: List[Creature], fruits: List[Fruit]) -> List[Union[Creature, Fruit]]:
+        targets = []
+
+        # Check for Creature targets
+        for possibleTarget in (c for c in creatures if c.aggressiveness < self.aggressiveness):
+            # Calculate target level from distance and reduced energy reward
+            targetLevel = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2) * possibleTarget.getReducedEnergy(self.aggressiveness)
+
+            # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
+            for i in range(len(targets)):
+                if targetLevel > targets[i]:
+                    break
+                else:
+                    i += 1
+            targets.insert(targetLevel, possibleTarget)
+
+        # Check for Fruit targets
+        for possibleTarget in fruits:
+            # Calculate target level from distance and reduced energy reward
+            targetLevel = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2) * possibleTarget.getReducedEnergy(self.aggressiveness)
+
+            # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
+            for i in range(len(targets)):
+                if targetLevel > targets[i]:
+                    break
+                else:
+                    i += 1
+            targets.insert(targetLevel, possibleTarget)
+    
+        return targets
+
+
+
+    def getReducedEnergy(self, predatorAggressiveness: float):
+        aggDiff = predatorAggressiveness - self.aggressiveness
+
+        if abs(aggDiff) != aggDiff:
+            while (1):
+                print("Energy difference negative - check for errors")
+
+        # equation below means higher predator aggressiveness -> higher energy returned (since higher aggressiveness -> higher aggDiff)
+        # and also higher aggressivness difference -> higher energy returned
+        # Ex. aggDiff = 1: energy returned=100%, aggDiff = 0: energyReturned=50% (Note: aggDiff should never = 0 exactly)
+        return self.energy * aggDiff + self.energy * (1 - aggDiff) / 2
+
+    def x1(self) -> float:
         return self.x - self.size / 2
-    def x2(self):
+    def x2(self) -> float:
         return self.x + self.size / 2
-    def y1(self):
+    def y1(self) -> float:
         return self.y - self.size / 2
-    def y2(self):
+    def y2(self) -> float:
         return self.y + self.size / 2
