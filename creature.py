@@ -6,13 +6,14 @@ maximumEnergy = 200 # Joules
 # Experimental Values
 density = 0.0005        # creature density in kg / m^3
 frictionCoeff = 0.05 # unitless, basically percentage of gravitational force applied against kinetic movement
-startingEnergy = 50 # Joules ( N * m)
+startingEnergy = 100 # Joules ( N * m)
 
 class Creature():
     # Creature parameters used across multiple time steps
     energy = startingEnergy
     velX = 0; velY = 0
     outOfEnergy = 0
+
 
     def __init__(self, size, maxX, maxY):
         self.size = size # creature size in meters
@@ -21,13 +22,18 @@ class Creature():
         self.x = randint(0, maxX)           # will eventually want to ensure creatures are not starting within each other
         self.y = randint(0, maxY)
 
+        #### RANDOM APPLIED FORCES FOR TESTING
+        self.appX =(random() - .5) * 10
+        self.appY = (random() -0.5) * 10
+
     def timeStep(self, deltaTime):
         # Testing CHANGE APPLIED FORCE TO BE RANDOMIZED EVENTUALLY
         if not self.outOfEnergy:
-            appliedForceX = 0; appliedForceY = 5 # applied force in Newtons
+            appliedForceX = self.appX; appliedForceY = self.appY # applied force in Newtons
         else:
             appliedForceX = 0; appliedForceY = 0 # applied force is none if out of energy
         
+
         # Calculate Friction Force
 
         mass = (4 * pi * (self.size / 2)**3 * density) / 3
@@ -38,17 +44,24 @@ class Creature():
         else: # exact equations for partial percentage of friction applied to x vs y directions (sign always against velocity in that direction)
             fXpercent = self.velX**2 / (self.velX**2 + self.velY**2) if self.velX > 0 else -(self.velX**2 / (self.velX**2 + self.velY**2))
             fYpercent = self.velY**2 / (self.velX**2 + self.velY**2) if self.velY > 0 else -(self.velY**2 / (self.velX**2 + self.velY**2))
-        if (abs(appliedForceX) < frictionForce): # Apply friction against velocity direction (according to sign of fXpercent)
+
+        #Apply X friction against velocity direction (according to sign of fXpercent) ensuring appliedForce overcomes friction
+        if (abs(appliedForceX) < frictionForce):
             forceX = -frictionForce * fXpercent
-        else:  # Take away friction force against velocity direction if overpowering applied force
+        else:
             forceX = appliedForceX - frictionForce * fXpercent
-            
-        if (abs(appliedForceY) < frictionForce): # Apply friction against velocity direction (according to sign of fYpercent)
+        #Apply Y friction against velocity direction (according to sign of fYpercent) ensuring appliedForce overcomes friction
+        if (abs(appliedForceY) < frictionForce):
             forceY = -frictionForce * fYpercent
-        else:  # Take away friction force against velocity direction if overpowering applied force
+        else: 
             forceY = appliedForceY - frictionForce * fYpercent
-        
-        accX = forceX / mass; accY = forceY / mass                  # Calculate acceleration from force and mass
+
+
+        # Calculate acceleration from force and mass
+        accX = forceX / mass; accY = forceY / mass
+
+
+        # Calculate velocity from acceleration and prevent unstable velocity oscillations around 0
 
         if (abs(self.velX) <= frictionForce * deltaTime / mass and abs(forceX) == frictionForce):
             self.velX = 0                     # Prevent velocity oscillations around 0 when no applied force overpowering friction
@@ -59,6 +72,9 @@ class Creature():
             
         self.velX = accX * deltaTime + self.velX                    # Determine new velocities according to accelerations
         self.velY = accY * deltaTime + self.velY
+
+
+        # Update positions and ensure not going out of bounds
 
         oldX = self.x; oldY = self.y                                # Record old positions for energy usage calculation
         self.x = self.x + self.velX * deltaTime                     # Update position according to velocity
@@ -84,3 +100,12 @@ class Creature():
             if self.energy <= 0:
                 self.outOfEnergy = 1
                 self.energy = 0
+        
+    def x1(self):
+        return self.x - self.size / 2
+    def x2(self):
+        return self.x + self.size / 2
+    def y1(self):
+        return self.y - self.size / 2
+    def y2(self):
+        return self.y + self.size / 2
