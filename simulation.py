@@ -4,15 +4,15 @@ import math
 class Simulation():
     creatures = []
     timeStep = 0
+    complete = False
 
-    def __init__(self, creatureCount, simulationTime=40, deltaTime=0.1):
+    def __init__(self, creatureCount: int, simulationTime=40, deltaTime=0.1):
         self.creatureCount = creatureCount
         self.simulationTime = simulationTime    # Number of seconds for simulation to simulate (not actual duration of animation)
         self.deltaTime = deltaTime              # time increment between simulation ticks
         self.totalTimeSteps = math.ceil(simulationTime / deltaTime) # Number of time steps to be simulated
 
         self.generateCreatures()
-        self.runTimeStep(15)
         #self.completeSimulation()
     
 
@@ -27,9 +27,10 @@ class Simulation():
 
             for creature in self.creatures:
                 creature.timeStep(self.deltaTime)
-            
-            print("Creature #0: Y-pos:", round(self.creatures[0].y, 2), " \t| Y-vel:", round(self.creatures[0].velY, 2), "\t| Energy: ", round(self.creatures[0].energy, 2))
             self.timeStep += 1
+        
+        if (self.timeStep == self.totalTimeSteps):
+            complete = True
 
     def completeSimulation(self):
         while (self.timeStep < self.totalTimeSteps):
@@ -37,8 +38,5 @@ class Simulation():
 
             for creature in self.creatures:
                 creature.timeStep(self.deltaTime)
-            
-            print("Y-pos:", round(self.creatures[0].y, 2), " \t| Y-vel:", round(self.creatures[0].velY, 2), "\t| Energy: ", round(self.creatures[0].energy, 2))
             self.timeStep += 1
-
-Simulation(10) # Run a simulation of 10 creatures (Creature count currently has no impact on output)
+        complete = True
