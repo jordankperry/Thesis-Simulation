@@ -10,19 +10,28 @@ class SimulationView(tk.Frame):
         self.pack(anchor=tk.NW, padx=10, pady=10)
 
         self.OFFSET = 3
-        self.WIDTH = 400 + self.OFFSET
+        self.WIDTH = 300 + self.OFFSET
         self.HEIGHT = 400 + self.OFFSET
         self.canvas = tk.Canvas(self, width=self.WIDTH, height=self.HEIGHT)
         self.canvas.config(bg="green")
         self.canvas.create_rectangle(self.OFFSET, self.OFFSET, self.WIDTH, self.HEIGHT, fill="black", outline="white")
-        self.canvas.pack()
+        self.canvas.pack(expand = 1)
 
-    def ClearCanvas(self):
+    def setScale(self, maxX: int, maxY: int):
+        self.scaleX = (self.WIDTH - self.OFFSET) / maxX
+        self.scaleY = (self.HEIGHT - self.OFFSET) / maxY 
+
+    def clearCanvas(self):
         self.canvas.create_rectangle(self.OFFSET, self.OFFSET, self.WIDTH, self.HEIGHT, fill="black", outline="white")
 
     def drawCreature(self, creature: Creature):
-        self.canvas.create_oval(self.OFFSET + creature.x1(), self.OFFSET + creature.y1(), self.OFFSET + creature.x2(), self.OFFSET + creature.y2(), fill="orange", outline="yellow")
-        self.canvas.create_line(self.OFFSET + creature.x, self.OFFSET + creature.y, self.OFFSET + creature.x + creature.velX, self.OFFSET + creature.y + creature.velY, fill="green")
+        self.canvas.create_oval(self.renderX(creature.x1()), self.renderY(creature.y1()), self.renderX(creature.x2()), self.renderY(creature.y2()), fill="orange", outline="yellow")
+        self.canvas.create_line(self.renderX(creature.x), self.renderY(creature.y), self.renderX(creature.x + creature.velX), self.renderY(creature.y + creature.velY), fill="green")
+
+    def renderX(self, x: float) -> float:
+        return self.OFFSET + x * self.scaleX
+    def renderY(self, y: float) -> float:
+        return self.OFFSET + y * self.scaleY
 
 
 
@@ -34,9 +43,10 @@ def main():
     window.update()
 
     sim = Simulation(20, 120, 0.3)
+    simView.setScale(sim.maxX, sim.maxY)
 
     while not sim.complete:
-        simView.ClearCanvas()
+        simView.clearCanvas()
 
         for creature in sim.creatures:
             simView.drawCreature(creature)
