@@ -162,7 +162,9 @@ class Creature():
     
         return targets
 
-
+    def findWalls(self) -> List[int]:
+        """Returns a list of 4 integers: [dist to x=0, dist to y=0, dist to x=maxX, dist to y=maxY]"""
+        return [self.x1, self.y1, self.maxX - self.x, self.maxY - self.y ]
 
     def getReducedEnergy(self, predatorAggressiveness: float):
         aggDiff = predatorAggressiveness - self.aggressiveness
