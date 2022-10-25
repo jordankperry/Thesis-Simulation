@@ -47,21 +47,21 @@ class Creature():
         frictionForce = frictionCoeff * mass * g # constant currently
 
         if (sqrt(self.velX**2 + self.velY**2) == 0):
-            fXpercent = 0; fYpercent = 0        # No friction if no movement
-        else: # exact equations for partial percentage of friction applied to x vs y directions (sign always against velocity in that direction)
-            fXpercent = self.velX**2 / (self.velX**2 + self.velY**2) if self.velX > 0 else -(self.velX**2 / (self.velX**2 + self.velY**2))
-            fYpercent = self.velY**2 / (self.velX**2 + self.velY**2) if self.velY > 0 else -(self.velY**2 / (self.velX**2 + self.velY**2))
+            frictionForceX = 0; frictionForceY = 0        # No friction if no movement
+        else: # exact equations for separting friction into x and y components (sign always same as velocity in that direction)
+            frictionForceX = frictionForce * self.velX / (self.velX**2 + self.velY**2)
+            frictionForceY = frictionForce * self.velY / (self.velX**2 + self.velY**2)
 
-        #Apply X friction against velocity direction (according to sign of fXpercent) ensuring appliedForce overcomes friction
+            # Apply X component of friction against velocity direction ensuring appliedForce overcomes friction
         if (abs(appliedForceX) < frictionForce):
-            forceX = -frictionForce * fXpercent
+            forceX = -frictionForceX
         else:
-            forceX = appliedForceX - frictionForce * fXpercent
-        #Apply Y friction against velocity direction (according to sign of fYpercent) ensuring appliedForce overcomes friction
+            forceX = appliedForceX - frictionForceX
+            # Apply Y component of friction against velocity direction ensuring appliedForce overcomes friction
         if (abs(appliedForceY) < frictionForce):
-            forceY = -frictionForce * fYpercent
+            forceY = -frictionForceY
         else: 
-            forceY = appliedForceY - frictionForce * fYpercent
+            forceY = appliedForceY - frictionForceY
 
 
         # Calculate acceleration from force and mass
@@ -69,15 +69,16 @@ class Creature():
 
 
         # Calculate velocity from acceleration and prevent unstable velocity oscillations around 0
-
-        if (abs(self.velX) <= frictionForce * deltaTime / mass and abs(forceX) == frictionForce):
-            self.velX = 0                     # Prevent velocity oscillations around 0 when no applied force overpowering friction
+            # Prevent velocity oscillations around 0 when no applied force overpowering friction
+        if (abs(self.velX) <= frictionForceX * deltaTime / mass and abs(forceX) == frictionForceX):
+            self.velX = 0                     
             accX = 0
-        if (abs(self.velY) <= frictionForce * deltaTime / mass and abs(forceY) == frictionForce):
-            self.velY = 0                     # Prevent velocity oscillations around 0 when no applied force overpowering friction
+        if (abs(self.velY) <= frictionForceY * deltaTime / mass and abs(forceY) == frictionForceY):
+            self.velY = 0
             accY = 0
-            
-        self.velX = accX * deltaTime + self.velX                    # Determine new velocities according to accelerations
+        
+            # Determine new velocities according to accelerations
+        self.velX = accX * deltaTime + self.velX
         self.velY = accY * deltaTime + self.velY
 
 
