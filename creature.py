@@ -33,6 +33,18 @@ class Creature():
         self.appX = (random() - .5) * 10
         self.appY = (random() - .5) * 10
 
+    def getReducedEnergy(self, predatorAggressiveness):
+        aggDiff = predatorAggressiveness - self.aggressiveness
+
+        if abs(aggDiff) != aggDiff:
+            while (1):
+                print("Energy difference negative - check for errors")
+
+        # equation below means higher predator aggressiveness -> higher energy returned (since higher aggressiveness -> higher aggDiff)
+        # and also higher aggressivness difference -> higher energy returned
+        # Ex. aggDiff = 1: energy returned=100%, aggDiff = 0: energyReturned=50% (Note: aggDiff should never = 0 exactly)
+        return self.energy * aggDiff + self.energy * (1 - aggDiff) / 2
+
     def timeStep(self, deltaTime):
         # Testing CHANGE APPLIED FORCE TO BE RANDOMIZED EVENTUALLY
         if not self.outOfEnergy:
@@ -108,7 +120,7 @@ class Creature():
             if self.energy <= 0:
                 self.outOfEnergy = 1
                 self.energy = 0
-        
+
     def x1(self):
         return self.x - self.size / 2
     def x2(self):
