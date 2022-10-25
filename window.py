@@ -22,6 +22,7 @@ class SimulationView(tk.Frame):
 
     def drawCreature(self, creature: Creature):
         self.canvas.create_oval(self.OFFSET + creature.x1(), self.OFFSET + creature.y1(), self.OFFSET + creature.x2(), self.OFFSET + creature.y2(), fill="orange", outline="yellow")
+        self.canvas.create_line(self.OFFSET + creature.x, self.OFFSET + creature.y, self.OFFSET + creature.x + creature.velX, self.OFFSET + creature.y + creature.velY, fill="green")
 
 
 
@@ -40,6 +41,7 @@ def main():
         for creature in sim.creatures:
             simView.drawCreature(creature)
 
+        window.update_idletasks()
         window.update()
         sleep(.001)
         sim.runTimeStep()

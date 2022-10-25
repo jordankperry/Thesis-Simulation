@@ -1,7 +1,7 @@
 from math import pi, sqrt
 from random import randint, random
 g = 9.81 # m / s**2
-maximumEnergy = 200 # Joules
+maximumEnergy = 500 # Joules
 
 # Experimental Values
 density = 0.0005        # creature density in kg / m^3
@@ -10,21 +10,28 @@ startingEnergy = 100 # Joules ( N * m)
 
 class Creature():
     # Creature parameters used across multiple time steps
-    energy = startingEnergy
-    velX = 0; velY = 0
-    outOfEnergy = 0
+
 
 
     def __init__(self, size, maxX, maxY):
+        # Simulation variables
+        self.maxX = maxX # max X position in meters
+        self.maxY = maxY # max Y position in meters
+
+        # Position and velocity variables
+        self.x = randint(size / 2, maxX - size / 2)           # will eventually want to ensure creatures are not starting within each other
+        self.y = randint(size / 2, maxY - size / 2)
+        self.velX = 0; self.velY = 0
+
+        # Creature characteristics
+        self.aggressiveness = random()
+        self.energy = startingEnergy
+        self.outOfEnergy = 0
         self.size = size # creature size in meters
-        self.maxX = maxX # max X in meters
-        self.maxY = maxY # max Y in meters
-        self.x = randint(0, maxX)           # will eventually want to ensure creatures are not starting within each other
-        self.y = randint(0, maxY)
 
         #### RANDOM APPLIED FORCES FOR TESTING
-        self.appX =(random() - .5) * 10
-        self.appY = (random() -0.5) * 10
+        self.appX = (random() - .5) * 10
+        self.appY = (random() - .5) * 10
 
     def timeStep(self, deltaTime):
         # Testing CHANGE APPLIED FORCE TO BE RANDOMIZED EVENTUALLY
@@ -88,7 +95,7 @@ class Creature():
             self.velX = 0; accX = 0
         
         if self.y - self.size / 2 < 0:   # y axis boundary hit, reduce acceleration and velocity to 0
-            self.x = self.size / 2
+            self.y = self.size / 2
             self.velY = 0; accY = 0
         elif self.y + self.size / 2 > self.maxY:
             self.y = self.maxY - self.size / 2
