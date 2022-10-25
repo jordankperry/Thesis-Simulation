@@ -3,22 +3,22 @@ import math
 
 class Simulation():
     creatures = []
-    timeStep = 0
-    complete = False
 
-    def __init__(self, creatureCount: int, simulationTime=40, deltaTime=0.1):
+    def __init__(self, creatureCount: int, simulationTime=40, deltaTime=0.1, maxX=400, maxY=400):
         self.creatureCount = creatureCount
         self.simulationTime = simulationTime    # Number of seconds for simulation to simulate (not actual duration of animation)
         self.deltaTime = deltaTime              # time increment between simulation ticks
+        self.timeStep = 0                       # current time step
         self.totalTimeSteps = math.ceil(simulationTime / deltaTime) # Number of time steps to be simulated
+        self.maxX = maxX; self.maxY = maxY        # Set simulation boundaries
+        self.complete = False                   # Set simulation status as incomplete
 
         self.generateCreatures()
-        #self.completeSimulation()
     
 
     def generateCreatures(self):
         for i in range(self.creatureCount):
-            self.creatures.append(Creature(size=20, maxX=400, maxY=400))
+            self.creatures.append(Creature(size=20, maxX=self.maxX, maxY=self.maxY))
 
     def runTimeStep(self, numberOfSteps=1):
         stopTimeStep = self.timeStep + numberOfSteps

@@ -10,7 +10,7 @@ class SimulationView(tk.Frame):
         self.pack(anchor=tk.NW, padx=10, pady=10)
 
         self.OFFSET = 3
-        self.WIDTH = 300 + self.OFFSET
+        self.WIDTH = 400 + self.OFFSET
         self.HEIGHT = 400 + self.OFFSET
         self.canvas = tk.Canvas(self, width=self.WIDTH, height=self.HEIGHT)
         self.canvas.config(bg="green")
