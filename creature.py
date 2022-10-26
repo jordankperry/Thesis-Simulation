@@ -1,6 +1,7 @@
 from __future__ import annotations
 from math import pi, sqrt
 from random import randint, random
+from turtle import distance
 from typing import List, Union
 
 from numpy import arctan
@@ -124,7 +125,8 @@ class Creature():
 
         for possibleThreat in (c for c in creatures if c.aggressiveness > self.aggressiveness):
             # Calculate threat level from distance and aggressiveness difference
-            threatLevel = sqrt((possibleThreat.x - self.x)^2 + (possibleThreat.y - self.y)^2) * (possibleThreat.aggressiveness - self.aggressiveness)
+            distance = sqrt((possibleThreat.x - self.x)^2 + (possibleThreat.y - self.y)^2)
+            threatLevel = (possibleThreat.aggressiveness - self.aggressiveness) / distance
             threatIndex = 0
 
             # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
@@ -143,7 +145,8 @@ class Creature():
         # Check for Creature targets
         for possibleTarget in (c for c in creatures if c.aggressiveness < self.aggressiveness):
             # Calculate target level from distance and reduced energy reward
-            targetLevel = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2) * possibleTarget.getReducedEnergy(self.aggressiveness)
+            distance = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2)
+            targetLevel =  possibleTarget.getReducedEnergy(self.aggressiveness) / maximumEnergy / distance
 
             # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
             for i in range(len(targets)):
@@ -156,7 +159,8 @@ class Creature():
         # Check for Fruit targets
         for possibleTarget in fruits:
             # Calculate target level from distance and reduced energy reward
-            targetLevel = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2) * possibleTarget.getReducedEnergy(self.aggressiveness)
+            distance = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2)
+            targetLevel =  possibleTarget.getReducedEnergy(self.aggressiveness) / maximumEnergy / distance
 
             # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
             for i in range(len(targets)):
