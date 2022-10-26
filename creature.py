@@ -8,12 +8,12 @@ from numpy import arctan
 
 from fruit import Fruit
 g = 9.81 # m / s**2
-maximumEnergy = 500 # Joules
+maximumEnergy = 25000 # Joules
 
 # Experimental Values
 density = 0.0005        # creature density in kg / m^3
 frictionCoeff = 0.25 # unitless, basically percentage of gravitational force applied against kinetic movement
-startingEnergy = 100 # Joules ( N * m)
+startingEnergy = 5000 # Joules ( N * m)
 
 class Creature():
     # Creature parameters used across multiple time steps
@@ -35,7 +35,7 @@ class Creature():
         self.energy = startingEnergy
         self.outOfEnergy = False        # Cannot apply more force after outOfEnergy = 1
         self.finished = False           # Finished = 1 if outOfEnergy and velX = 0 and velY = 0 (turn into a "fruit")
-        self.size = size                # creature size in meters
+        self.size = randint(5, 10) * 2                # creature size in meters
 
         #### RANDOM APPLIED FORCES FOR TESTING
         self.appX = (random() - .5) * 10

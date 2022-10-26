@@ -32,9 +32,11 @@ class Simulation():
             for creature in self.creatures:
                 # GO TOWARDS PRIMARY TARGET FOR TESTING
                 targets = creature.findNearestTargets(self.creatures, self.fruits)
-                if len(targets) > 0:
-                    creature.appX = (targets[0].x - creature.x) / 5
-                    creature.appY = (targets[0].y - creature.y) / 5
+                if len(targets) > 0 and not creature.outOfEnergy:
+                    creature.appX = (targets[0].x - creature.x) / 100
+                    creature.appY = (targets[0].y - creature.y) / 100
+                else:
+                    creature.appX = 0; creature.appY = 0
                 creature.timeStep(self.deltaTime)
 
                 if creature.finished:
@@ -44,8 +46,8 @@ class Simulation():
                     
             self.timeStep += 1
         
-        if (self.timeStep == self.totalTimeSteps):
-            complete = True
+        if (self.timeStep >= self.totalTimeSteps - 1):
+            self.complete = True
 
     def completeSimulation(self):
-        self.runTimeStep(self.totalTimeSteps - self.timeStep - 1)
+        self.runTimeStep(self.totalTimeSteps - 1 -self.timeStep)

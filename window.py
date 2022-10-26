@@ -26,15 +26,16 @@ class SimulationView(tk.Frame):
         self.canvas.create_rectangle(self.OFFSET, self.OFFSET, self.WIDTH, self.HEIGHT, fill="black", outline="white")
 
     def drawCreature(self, creature: Creature):
-        self.canvas.create_oval(self.renderX(creature.x1()), self.renderY(creature.y1()), self.renderX(creature.x2()), self.renderY(creature.y2()), fill="orange", outline="yellow")
-        self.canvas.create_line(self.renderX(creature.x), self.renderY(creature.y), self.renderX(creature.x + creature.appX), self.renderY(creature.y + creature.appY), fill="green")
+        self.canvas.create_oval(self.calcX(creature.x1()), self.calcY(creature.y1()), self.calcX(creature.x2()), self.calcY(creature.y2()), fill="orange", outline="yellow")
+        self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.velX), self.calcY(creature.y + creature.velY), fill="green")
+        self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.appX), self.calcY(creature.y + creature.appY), fill="blue")
 
     def drawFruit(self, fruit: Fruit):
-        self.canvas.create_oval(self.renderX(fruit.x1()), self.renderY(fruit.y1()), self.renderX(fruit.x2()), self.renderY(fruit.y2()), fill="#F30", outline="red")
+        self.canvas.create_oval(self.calcX(fruit.x1()), self.calcY(fruit.y1()), self.calcX(fruit.x2()), self.calcY(fruit.y2()), fill="#F30", outline="red")
 
-    def renderX(self, x: float) -> float:
+    def calcX(self, x: float) -> float:
         return self.OFFSET + x * self.scaleX
-    def renderY(self, y: float) -> float:
+    def calcY(self, y: float) -> float:
         return self.OFFSET + y * self.scaleY
 
 def main():
@@ -44,21 +45,26 @@ def main():
     window.geometry("500x500+500+300")
     window.update()
 
-    sim = Simulation(creatureCount=20, simulationTime=120, deltaTime=0.2)
+    info = tk.Label(text="Green is velocity, Blue is Applied Force")
+    info.pack()
+
+    sim = Simulation(creatureCount=40, simulationTime=120, deltaTime=0.2, maxX=800, maxY=800)
+    sim.completeSimulation()
     simView.setScale(sim.maxX, sim.maxY)
 
     while not sim.complete:
         simView.clearCanvas()
+        stepsPerRender = 1
 
         for creature in sim.creatures:
             simView.drawCreature(creature)
         for fruit in sim.fruits:
             simView.drawFruit(fruit)
 
-        window.update_idletasks()
+        #window.update_idletasks()
         window.update()
         #sleep(.001) # Seems like delay of rendering makes sleeping unnecessary
-        sim.runTimeStep()
+        sim.runTimeStep(stepsPerRender)
 
     #window.mainloop()
 
