@@ -3,6 +3,8 @@ from math import pi, sqrt
 from random import randint, random
 from typing import List, Union
 
+from numpy import arctan
+
 from fruit import Fruit
 g = 9.81 # m / s**2
 maximumEnergy = 500 # Joules
@@ -166,16 +168,45 @@ class Creature():
     
         return targets
 
+    def getAngle(self, source: Union[Creature, Fruit]) -> float:
+        """returns 0-1 according to direction to source from self (0 for +x, 0.25 for -y, 0.5 for -x, 0.75 for +y)"""
+        angle = arctan(abs(source.y - self.y) / abs(source.x - self.x)) # angle between 0 to pi/2
+        angle = angle / 2 / pi # angle now between 0 to 0.25 (assuming -y and +x direction)
+
+        # Add +0 to +0.75 depending on quadrant of angle (if i +y and -x)
+        if abs(source.y - self.y) == source.y - self.y:
+            if abs(source.x - self.x) == source.x - self.x: # +y and +x direction thus +0.75
+                angle += 0.75
+            else:                                           # +y and -x direction thus +0.5
+                angle += 0.5
+        elif abs(source.x - self.x) != source.x - self.x:   # -y and -x direction thus +0.25
+            angle += 0.25
+        
+        return angle
+
+        
+
+    ###############################################
+    ## IF I WANT TO CHECK TYPE LATER THIS IS HOW ##
+    ###############################################
+
+    def something(self, target: Union[Creature, Fruit]):
+        if isinstance(target, Creature):
+            target.__class__ = Creature
+        else:
+            target.__class__ = Fruit
+
+    ###############################################
+    ###############################################
+    ###############################################
+
     def findWalls(self) -> List[int]:
         """Returns a list of 4 integers: [dist to x=0, dist to y=0, dist to x=maxX, dist to y=maxY]"""
         return [self.x1, self.y1, self.maxX - self.x, self.maxY - self.y ]
 
     def getReducedEnergy(self, predatorAggressiveness: float):
         aggDiff = predatorAggressiveness - self.aggressiveness
-
-        if abs(aggDiff) != aggDiff:
-            while (1):
-                print("Energy difference negative - check for errors")
+        assert abs(aggDiff) == aggDiff # Ensure difference is positive
 
         # equation below means higher predator aggressiveness -> higher energy returned (since higher aggressiveness -> higher aggDiff)
         # and also higher aggressivness difference -> higher energy returned

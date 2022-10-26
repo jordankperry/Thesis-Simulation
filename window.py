@@ -53,7 +53,7 @@ def main():
 
         window.update_idletasks()
         window.update()
-        sleep(.001)
+        #sleep(.001) # Seems like delay of rendering makes sleeping unnecessary
         sim.runTimeStep()
 
     #window.mainloop()
