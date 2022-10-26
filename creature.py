@@ -142,9 +142,9 @@ class Creature():
         return threats
 
     def calcThreatLevel(self, threat: Creature) -> float:
-        """Calculate threat level from distance and difference in aggressiveness"""
+        """Calculate threat level from distance and energy reward for predator"""
         distance = sqrt((threat.x - self.x)**2 + (threat.y - self.y)**2)
-        return 1 - (threat.aggressiveness - self.aggressiveness) / (distance + 0.0001) # distance should never be 0 once collision is implemented and this + 0.0001 can be removed with an assert distance > 0 beforehand
+        return self.getReducedEnergy(threat.aggressiveness) / maximumEnergy / (distance + 0.0001) # distance should never be 0 once collision is implemented and this + 0.0001 can be removed with an assert distance > 0 beforehand
 
     def findNearestTargets(self, creatures: List[Creature], fruits: List[Fruit]) -> List[Union[Creature, Fruit]]:
         targets = []
@@ -161,7 +161,7 @@ class Creature():
     def calcTargetLevel(self, target: Union[Creature, Fruit]) -> float:
         """Calculate target level from distance and reduced energy reward"""
         distance = sqrt((target.x - self.x)**2 + (target.y - self.y)**2)
-        return 1 - target.getReducedEnergy(self.aggressiveness) / maximumEnergy / (distance + 0.0001)
+        return target.getReducedEnergy(self.aggressiveness) / maximumEnergy / (distance + 0.0001)
 
     def insertTarget(self, targets: List[Union[Creature, Fruit]], target: Union[Creature, Fruit], targetLevel: float):
         """Insert new target into targets list sorted from highest reward to lowest (highest/nearest energy source first)"""
