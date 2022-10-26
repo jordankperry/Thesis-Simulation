@@ -30,24 +30,28 @@ class Creature():
         # Creature characteristics
         self.aggressiveness = random()
         self.energy = startingEnergy
-        self.outOfEnergy = 0
-        self.size = size # creature size in meters
+        self.outOfEnergy = False        # Cannot apply more force after outOfEnergy = 1
+        self.finished = False           # Finished = 1 if outOfEnergy and velX = 0 and velY = 0 (turn into a "fruit")
+        self.size = size                # creature size in meters
 
         #### RANDOM APPLIED FORCES FOR TESTING
         self.appX = (random() - .5) * 10
         self.appY = (random() - .5) * 10
 
     def timeStep(self, deltaTime: float):
-        # Testing CHANGE APPLIED FORCE TO BE RANDOMIZED EVENTUALLY
+        # Testing CHANGE APPLIED FORCE TO BE MACHINE LEARNING OUTPUT
         if not self.outOfEnergy:
             appliedForceX = self.appX; appliedForceY = self.appY # applied force in Newtons
         else:
             appliedForceX = 0; appliedForceY = 0 # applied force is none if out of energy
+            
+            if self.velX == 0 and self.velY == 0: # No energy & No movement -> fruit
+                self.finished = 1
         
 
         # Calculate Friction Force
 
-        mass = (4 * pi * (self.size / 2)**3 * density) / 3
+        mass = 4 * pi * (self.size / 2)**3 * density / 3
         frictionForce = frictionCoeff * mass * g # constant currently
 
         if (sqrt(self.velX**2 + self.velY**2) == 0):
