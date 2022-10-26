@@ -14,28 +14,29 @@ class Simulation():
         self.maxX = maxX; self.maxY = maxY      # Set simulation boundaries
         self.complete = False                   # Set simulation status as incomplete
 
-        self.creatures: List[Creature]          # List of living Creatures
-        self.fruits: List[Fruit]                # List of uneaten Fruits
+        self.creatures: List[Creature] = []     # List of living Creatures
+        self.fruits: List[Fruit] = []           # List of uneaten Fruits
 
         self.generateCreatures()
     
 
     def generateCreatures(self):
         for i in range(self.creatureCount):
-            self.creatures.append(Creature(self, size=20, maxX=self.maxX, maxY=self.maxY))
+            self.creatures.append(Creature(size=20, maxX=self.maxX, maxY=self.maxY))
 
     def runTimeStep(self, numberOfSteps=1):
         stopTimeStep = self.timeStep + numberOfSteps
         while (self.timeStep < stopTimeStep):
             print("Running time step #", self.timeStep, " (", round(self.timeStep * self.deltaTime, 2), "-", round((self.timeStep + 1) * self.deltaTime, 2), "s):", sep='')
 
-            for i in range(len(self.creatures)):
-                self.creatures[i].timeStep(self.deltaTime)
+            for creature in self.creatures:
+                creature.timeStep(self.deltaTime)
 
-                if self.creatures[i].finished:
+                if creature.finished:
                     # If a creature is finished, turn it into a fruit with energy = 100 and reductionRate = 1.5-aggressiveness (Less reduction for predators consuming predator bodies)
-                    self.fruits.append(Fruit(self.creatures[i]))
-                    del self.creatures[i]
+                    self.fruits.append(Fruit(creature))
+                    self.creatures.remove(creature)
+            
                     
             self.timeStep += 1
         
