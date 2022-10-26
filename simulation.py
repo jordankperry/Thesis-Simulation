@@ -33,8 +33,8 @@ class Simulation():
                 # GO TOWARDS PRIMARY TARGET FOR TESTING
                 targets = creature.findNearestTargets(self.creatures, self.fruits)
                 if len(targets) > 0 and not creature.outOfEnergy:
-                    creature.appX = (targets[0].x - creature.x) / 100
-                    creature.appY = (targets[0].y - creature.y) / 100
+                    creature.appX = (targets[0].x - creature.x) / 25
+                    creature.appY = (targets[0].y - creature.y) / 25 # as they chase, they're all using different amounts of energy and thus their value to others changes
                 else:
                     creature.appX = 0; creature.appY = 0
                 creature.timeStep(self.deltaTime)

@@ -16,10 +16,6 @@ frictionCoeff = 0.25 # unitless, basically percentage of gravitational force app
 startingEnergy = 5000 # Joules ( N * m)
 
 class Creature():
-    # Creature parameters used across multiple time steps
-
-
-
     def __init__(self, size: int, maxX: int, maxY: int):
         # Simulation variables
         self.maxX = maxX # max X position in meters
@@ -35,7 +31,7 @@ class Creature():
         self.energy = startingEnergy
         self.outOfEnergy = False        # Cannot apply more force after outOfEnergy = 1
         self.finished = False           # Finished = 1 if outOfEnergy and velX = 0 and velY = 0 (turn into a "fruit")
-        self.size = randint(5, 10) * 2                # creature size in meters
+        self.size = randint(5, 15) * 2                # creature size in meters
 
         #### RANDOM APPLIED FORCES FOR TESTING
         self.appX = (random() - .5) * 10
@@ -195,8 +191,6 @@ class Creature():
         
         return angle
 
-        
-
     ###############################################
     ## IF I WANT TO CHECK TYPE LATER THIS IS HOW ##
     ###############################################
@@ -211,9 +205,10 @@ class Creature():
     ###############################################
     ###############################################
 
-    def findWalls(self) -> List[int]:
-        """Returns a list of 4 integers: [dist to x=0, dist to y=0, dist to x=maxX, dist to y=maxY]"""
-        return [self.x1, self.y1, self.maxX - self.x, self.maxY - self.y ]
+    def findWalls(self) -> List[float]:
+        """Returns a list of 4 floats: [dist to x=0 / maxX, dist to y=0 / maxY, dist to x=maxX / maxX, dist to y=maxY / maxY]\n
+        All values maxed and mined to ensure they return between 0-1"""
+        return [max(0, self.x1) / self.maxX, max(0, self.y1) / self.maxX, min(self.maxX, self.maxX - self.x) / self.maxX, min(self.maxY, self.maxY - self.y) / self.maxY ]
 
     def getReducedEnergy(self, predatorAggressiveness: float):
         aggDiff = predatorAggressiveness - self.aggressiveness
