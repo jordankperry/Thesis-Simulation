@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from creature import Creature
 from fruit import Fruit
 import math
@@ -30,13 +30,17 @@ class Simulation():
             print("Running time step #", self.timeStep, " (", round(self.timeStep * self.deltaTime, 2), "-", round((self.timeStep + 1) * self.deltaTime, 2), "s):", sep='')
 
             for creature in self.creatures:
+                # GO TOWARDS PRIMARY TARGET FOR TESTING
+                targets = creature.findNearestTargets(self.creatures, self.fruits)
+                if len(targets) > 0:
+                    creature.appX = (targets[0].x - creature.x) / 5
+                    creature.appY = (targets[0].y - creature.y) / 5
                 creature.timeStep(self.deltaTime)
 
                 if creature.finished:
                     # If a creature is finished, turn it into a fruit with energy = 100 and reductionRate = 1.5-aggressiveness (Less reduction for predators consuming predator bodies)
                     self.fruits.append(Fruit(creature))
                     self.creatures.remove(creature)
-            
                     
             self.timeStep += 1
         
@@ -44,10 +48,4 @@ class Simulation():
             complete = True
 
     def completeSimulation(self):
-        while (self.timeStep < self.totalTimeSteps):
-            print("Running time step #", self.timeStep, " (", round(self.timeStep * self.deltaTime, 2), "-", round((self.timeStep + 1) * self.deltaTime, 2), "s):", sep='')
-
-            for creature in self.creatures:
-                creature.timeStep(self.deltaTime)
-            self.timeStep += 1
-        complete = True
+        self.runTimeStep(self.totalTimeSteps - self.timeStep - 1)

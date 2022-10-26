@@ -17,4 +17,13 @@ class Fruit():
         self.creatureBody = True
     
     def getReducedEnergy(self, aggressiveness):
-        return self.energyValue * (1 - 0.75*aggressiveness)**self.reductionValue
+        return self.energy * (1 - 0.75*aggressiveness)**self.reductionValue
+        
+    def x1(self) -> float:
+        return self.x - self.size / 2
+    def x2(self) -> float:
+        return self.x + self.size / 2
+    def y1(self) -> float:
+        return self.y - self.size / 2
+    def y2(self) -> float:
+        return self.y + self.size / 2

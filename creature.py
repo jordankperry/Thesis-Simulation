@@ -12,7 +12,7 @@ maximumEnergy = 500 # Joules
 
 # Experimental Values
 density = 0.0005        # creature density in kg / m^3
-frictionCoeff = 0.05 # unitless, basically percentage of gravitational force applied against kinetic movement
+frictionCoeff = 0.25 # unitless, basically percentage of gravitational force applied against kinetic movement
 startingEnergy = 100 # Joules ( N * m)
 
 class Creature():
@@ -99,20 +99,22 @@ class Creature():
         self.x = self.x + self.velX * deltaTime                     # Update position according to velocity
         self.y = self.y + self.velY * deltaTime
 
-        # Check for hitting x boundaries and reduce acceleration and velocity to 0 if so
-        if self.x - self.size / 2 < 0:
+        WCVR = 0.5 # Wall Collision Velocity Retainment: 0 -> velocity = 0, 1 -> velocity = -velocity on wall collision
+        boundaryLeeway = 1
+        # Check for hitting x boundaries and reduce acceleration to 0 and flip velocity if so
+        if self.x - self.size / 2 < -boundaryLeeway:
             self.x = self.size / 2
-            self.velX = 0; accX = 0
-        elif self.x + self.size / 2 > self.maxX:
+            self.velX = abs(self.velX) * WCVR; accX = 0
+        elif self.x + self.size / 2 > self.maxX + boundaryLeeway:
             self.x = self.maxX - self.size / 2
-            self.velX = 0; accX = 0
-        # Check for hitting y boundaries and reduce acceleration and velocity to 0 if so
-        if self.y - self.size / 2 < 0:
+            self.velX = -abs(self.velX) * WCVR ; accX = 0
+        # Check for hitting y boundaries and reduce acceleration to 0 and flip velocity if so
+        if self.y - self.size / 2 < -boundaryLeeway:
             self.y = self.size / 2
-            self.velY = 0; accY = 0
-        elif self.y + self.size / 2 > self.maxY:
+            self.velY = abs(self.velY) * WCVR; accY = 0
+        elif self.y + self.size / 2 > self.maxY + boundaryLeeway:
             self.y = self.maxY - self.size / 2
-            self.velY = 0; accY = 0
+            self.velY = -abs(self.velY) * WCVR; accY = 0
         
         if not self.outOfEnergy:            # Calculate energy used and determine if out of energy
             self.energy = self.energy - abs(self.x - oldX) * abs(forceX) - abs(self.y - oldY) * abs(forceY)
@@ -125,20 +127,24 @@ class Creature():
         threats = []
 
         for possibleThreat in (c for c in creatures if c.aggressiveness > self.aggressiveness):
-            # Calculate threat level from distance and aggressiveness difference
-            distance = sqrt((possibleThreat.x - self.x)^2 + (possibleThreat.y - self.y)^2)
-            threatLevel = (possibleThreat.aggressiveness - self.aggressiveness) / distance
+            threatLevel = self.calcThreatLevel(possibleThreat)
             threatIndex = 0
 
             # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
             for i in range(len(threats)):
-                if threatLevel > threats[i]:
+                if threatLevel > self.calcThreatLevel(threats[i]):
+                    threatIndex = i
                     break
                 else:
                     i += 1
             threats.insert(threatIndex, possibleThreat)
         
         return threats
+
+    def calcThreatLevel(self, threat: Creature) -> float:
+        """Calculate threat level from distance and difference in aggressiveness"""
+        distance = sqrt((threat.x - self.x)**2 + (threat.y - self.y)**2)
+        return 1 - (threat.aggressiveness - self.aggressiveness) / (distance + 0.0001) # distance should never be 0 once collision is implemented and this + 0.0001 can be removed with an assert distance > 0 beforehand
 
     def findNearestTargets(self, creatures: List[Creature], fruits: List[Fruit]) -> List[Union[Creature, Fruit]]:
         targets = []
@@ -154,17 +160,20 @@ class Creature():
 
     def calcTargetLevel(self, target: Union[Creature, Fruit]) -> float:
         """Calculate target level from distance and reduced energy reward"""
-        distance = sqrt((target.x - self.x)^2 + (target.y - self.y)^2)
-        return target.getReducedEnergy(self.aggressiveness) / maximumEnergy / distance
+        distance = sqrt((target.x - self.x)**2 + (target.y - self.y)**2)
+        return 1 - target.getReducedEnergy(self.aggressiveness) / maximumEnergy / (distance + 0.0001)
 
     def insertTarget(self, targets: List[Union[Creature, Fruit]], target: Union[Creature, Fruit], targetLevel: float):
         """Insert new target into targets list sorted from highest reward to lowest (highest/nearest energy source first)"""
+        targetIndex = 0
+
         for i in range(len(targets)):
-            if targetLevel > targets[i]:
+            if targetLevel > self.calcTargetLevel(targets[i]):
+                targetIndex = i
                 break
             else:
                 i += 1
-        targets.insert(targetLevel, target)
+        targets.insert(targetIndex, target)
 
     def getAngle(self, source: Union[Creature, Fruit]) -> float:
         """returns 0-1 according to direction to source from self (0 for +x, 0.25 for -y, 0.5 for -x, 0.75 for +y)"""

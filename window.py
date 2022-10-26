@@ -1,5 +1,6 @@
 from time import sleep
 import tkinter as tk
+from fruit import Fruit
 from simulation import Simulation
 from creature import Creature
 
@@ -26,14 +27,15 @@ class SimulationView(tk.Frame):
 
     def drawCreature(self, creature: Creature):
         self.canvas.create_oval(self.renderX(creature.x1()), self.renderY(creature.y1()), self.renderX(creature.x2()), self.renderY(creature.y2()), fill="orange", outline="yellow")
-        self.canvas.create_line(self.renderX(creature.x), self.renderY(creature.y), self.renderX(creature.x + creature.velX), self.renderY(creature.y + creature.velY), fill="green")
+        self.canvas.create_line(self.renderX(creature.x), self.renderY(creature.y), self.renderX(creature.x + creature.appX), self.renderY(creature.y + creature.appY), fill="green")
+
+    def drawFruit(self, fruit: Fruit):
+        self.canvas.create_oval(self.renderX(fruit.x1()), self.renderY(fruit.y1()), self.renderX(fruit.x2()), self.renderY(fruit.y2()), fill="#F30", outline="red")
 
     def renderX(self, x: float) -> float:
         return self.OFFSET + x * self.scaleX
     def renderY(self, y: float) -> float:
         return self.OFFSET + y * self.scaleY
-
-
 
 def main():
     window = tk.Tk()
@@ -42,7 +44,7 @@ def main():
     window.geometry("500x500+500+300")
     window.update()
 
-    sim = Simulation(20, 120, 0.3)
+    sim = Simulation(creatureCount=20, simulationTime=120, deltaTime=0.2)
     simView.setScale(sim.maxX, sim.maxY)
 
     while not sim.complete:
@@ -50,6 +52,8 @@ def main():
 
         for creature in sim.creatures:
             simView.drawCreature(creature)
+        for fruit in sim.fruits:
+            simView.drawFruit(fruit)
 
         window.update_idletasks()
         window.update()
