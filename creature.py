@@ -170,17 +170,21 @@ class Creature():
 
     def getAngle(self, source: Union[Creature, Fruit]) -> float:
         """returns 0-1 according to direction to source from self (0 for +x, 0.25 for -y, 0.5 for -x, 0.75 for +y)"""
+
+        # Handle cases where direction is entirely in one axis to prevent accidental divide by 0
+        if source.x - self.x == 0:
+            return 0.25 if source.y - self.y > 0 else 0.75
+        elif source.y - self.y == 0:
+            return 0 if source.x - self.x > 0 else 0.5
+
         angle = arctan(abs(source.y - self.y) / abs(source.x - self.x)) # angle between 0 to pi/2
         angle = angle / 2 / pi # angle now between 0 to 0.25 (assuming -y and +x direction)
 
-        # Add +0 to +0.75 depending on quadrant of angle (if i +y and -x)
-        if abs(source.y - self.y) == source.y - self.y:
-            if abs(source.x - self.x) == source.x - self.x: # +y and +x direction thus +0.75
-                angle += 0.75
-            else:                                           # +y and -x direction thus +0.5
-                angle += 0.5
-        elif abs(source.x - self.x) != source.x - self.x:   # -y and -x direction thus +0.25
-            angle += 0.25
+        # Adjust angle depending on direction quadrant
+        if source.y - self.y > 0: # +y thus if +x: 1-angle to flip over y axis otherwise if -x: 0.5+angle to rotate 180 degrees
+            angle = 1 - angle if source.x - self.x > 0 else 0.5 + angle
+        elif source.x - self.x < 0:   # -y and -x direction thus +0.25 (and flip x and y of angle (0.25-angle))
+            angle = 0.5 - angle
         
         return angle
 
