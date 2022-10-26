@@ -99,14 +99,15 @@ class Creature():
         self.x = self.x + self.velX * deltaTime                     # Update position according to velocity
         self.y = self.y + self.velY * deltaTime
 
-        if self.x - self.size / 2 < 0:   # x axis boundary hit, reduce acceleration and velocity to 0
+        # Check for hitting x boundaries and reduce acceleration and velocity to 0 if so
+        if self.x - self.size / 2 < 0:
             self.x = self.size / 2
             self.velX = 0; accX = 0
         elif self.x + self.size / 2 > self.maxX:
             self.x = self.maxX - self.size / 2
             self.velX = 0; accX = 0
-        
-        if self.y - self.size / 2 < 0:   # y axis boundary hit, reduce acceleration and velocity to 0
+        # Check for hitting y boundaries and reduce acceleration and velocity to 0 if so
+        if self.y - self.size / 2 < 0:
             self.y = self.size / 2
             self.velY = 0; accY = 0
         elif self.y + self.size / 2 > self.maxY:
@@ -144,33 +145,26 @@ class Creature():
 
         # Check for Creature targets
         for possibleTarget in (c for c in creatures if c.aggressiveness < self.aggressiveness):
-            # Calculate target level from distance and reduced energy reward
-            distance = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2)
-            targetLevel =  possibleTarget.getReducedEnergy(self.aggressiveness) / maximumEnergy / distance
-
-            # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
-            for i in range(len(targets)):
-                if targetLevel > targets[i]:
-                    break
-                else:
-                    i += 1
-            targets.insert(targetLevel, possibleTarget)
-
+            self.insertTarget(targets, possibleTarget, self.calcTargetLevel(possibleTarget))
         # Check for Fruit targets
         for possibleTarget in fruits:
-            # Calculate target level from distance and reduced energy reward
-            distance = sqrt((possibleTarget.x - self.x)^2 + (possibleTarget.y - self.y)^2)
-            targetLevel =  possibleTarget.getReducedEnergy(self.aggressiveness) / maximumEnergy / distance
+            self.insertTarget(targets, possibleTarget, self.calcTargetLevel(possibleTarget))
 
-            # Insert new threat into threats list (sorted from highest threat to lowest (top predator has no))
-            for i in range(len(targets)):
-                if targetLevel > targets[i]:
-                    break
-                else:
-                    i += 1
-            targets.insert(targetLevel, possibleTarget)
-    
         return targets
+
+    def calcTargetLevel(self, target: Union[Creature, Fruit]) -> float:
+        """Calculate target level from distance and reduced energy reward"""
+        distance = sqrt((target.x - self.x)^2 + (target.y - self.y)^2)
+        return target.getReducedEnergy(self.aggressiveness) / maximumEnergy / distance
+
+    def insertTarget(self, targets: List[Union[Creature, Fruit]], target: Union[Creature, Fruit], targetLevel: float):
+        """Insert new target into targets list sorted from highest reward to lowest (highest/nearest energy source first)"""
+        for i in range(len(targets)):
+            if targetLevel > targets[i]:
+                break
+            else:
+                i += 1
+        targets.insert(targetLevel, target)
 
     def getAngle(self, source: Union[Creature, Fruit]) -> float:
         """returns 0-1 according to direction to source from self (0 for +x, 0.25 for -y, 0.5 for -x, 0.75 for +y)"""
