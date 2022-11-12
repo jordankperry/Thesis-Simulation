@@ -164,27 +164,13 @@ class Creature():
     def calcThreatLevel(self, threat: Creature) -> float:
         """Calculate threat level from distance and energy reward for predator"""
         distance = self.getDistance(threat)
-        assert distance > 0
-        return (self.getReducedEnergy(threat.aggressiveness) / self.maximumEnergy) / ((distance / 10) ** 2) # distance should never be 0 once collision is implemented and this + 0.0001 can be removed with an assert distance > 0 beforehand
-
-    def findNearestTargets(self, creatures: List[Creature], fruits: List[Fruit]) -> List[Creature | Fruit]:
-        """Returns a list of targets, sorted from highest target level to lowest"""
-        targets = []
-
-        # Check for Creature targets
-        for possibleTarget in (c for c in creatures if c.aggressiveness < self.aggressiveness):
-            targets.append(possibleTarget)
-        # Check for Fruit targets
-        for possibleTarget in fruits:
-            targets.append(possibleTarget)
-
-        targets.sort(key=self.calcTargetLevel, reverse=True)
-        return targets
+        assert distance > 0, "Distance should never be 0"
+        return (self.getReducedEnergy(threat.aggressiveness) / self.maximumEnergy) / ((distance / 10) ** 2)
 
     def calcTargetLevel(self, target: Creature | Fruit) -> float:
         """Calculate target level from distance and reduced energy reward"""
         distance = self.getDistance(target)
-        assert distance > 0
+        assert distance > 0, "Distance should never be 0"
         return (target.getReducedEnergy(self.aggressiveness) / self.maximumEnergy) / ((distance / 10) ** 2)
 
     def getDistance(self, toCreature: Creature | Fruit) -> float:
@@ -219,7 +205,7 @@ class Creature():
     def getReducedEnergy(self, predatorAggressiveness: float):
         """Returns the energy a predator would obtain from consuming this creature, given their aggressiveness difference and this creature's energy level"""
         aggDiff = predatorAggressiveness - self.aggressiveness
-        assert abs(aggDiff) == aggDiff # Ensure difference is positive
+        assert aggDiff > 0, "Aggressiveness difference should always be positive (predatorAggressiveness > self.aggressiveness)"
 
         # equation below means higher predator aggressiveness -> higher energy returned (since higher aggressiveness -> higher aggDiff)
         # and also higher aggressivness difference -> higher energy returned
@@ -228,7 +214,6 @@ class Creature():
 
     def adjustSize(self) -> float:
         self.size = 5 + 0.03 * (self.energy * 3 * pi / 4) ** (1/2)
-
 
     def x1(self) -> float:
         """Returns the farthest left value of this creature"""

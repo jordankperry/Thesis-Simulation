@@ -12,7 +12,7 @@ class Fruit():
             self.creatureBody = False           # Was this fruit previously a creature?
         else:
             # For creating Fruits from finished Creature bodies
-            assert x.finished                   # Ensure x is a finished Creature (cannot import Creature :( due to circular import)
+            assert x.finished, "parameter x must be of Type Creature, float, or int" # Check x is indeed a creature type and is finished
             creature=x
             self.x = creature.x; self.y = creature.y
             self.size = 5                       # Size is 5 for old creatures turned fruits
@@ -20,8 +20,8 @@ class Fruit():
             self.reductionValue = 1.5 - creature.aggressiveness # How much aggressiveness causes energy value to decrease, ideally 1 to 2
             self.creatureBody = True
     
-    def getReducedEnergy(self, aggressiveness):
-        return self.energy * (1 - 0.75*aggressiveness) ** self.reductionValue
+    def getReducedEnergy(self, aggressiveness: float) -> float:
+        return self.energy * (1 - 0.75 * aggressiveness) ** self.reductionValue
         
     def x1(self) -> float:
         return self.x - self.size / 2
