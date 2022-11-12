@@ -1,6 +1,6 @@
 from __future__ import annotations
 from math import pi, sqrt
-from random import randint, random
+from random import randint
 from turtle import distance
 from typing import List, Union
 
@@ -16,28 +16,26 @@ frictionCoeff = 0.25 # unitless, basically percentage of gravitational force app
 startingEnergy = 5000 # Joules ( N * m)
 
 class Creature():
-    def __init__(self, size: int, maxX: int, maxY: int):
+    def __init__(self, size: int, maxX: int, maxY: int, aggressiveness: float):
         # Simulation variables
         self.maxX = maxX # max X position in meters
         self.maxY = maxY # max Y position in meters
 
-        # Position and velocity variables
-        self.x = randint(size / 2, maxX - size / 2)           # will eventually want to ensure creatures are not starting within each other
+        # Position, velocity, and applied force variables
+        self.x = randint(size / 2, maxY - size / 2)           # will eventually want to ensure creatures are not starting within each other
         self.y = randint(size / 2, maxY - size / 2)
         self.velX = 0; self.velY = 0
+        self.appX = 0; self.appY = 0
 
         # Creature characteristics
-        self.aggressiveness = random()
+        self.aggressiveness = aggressiveness
         self.energy = startingEnergy
         self.outOfEnergy = False        # Cannot apply more force after outOfEnergy = 1
         self.finished = False           # Finished = 1 if outOfEnergy and velX = 0 and velY = 0 (turn into a "fruit")
-        self.size = randint(5, 15) * 2                # creature size in meters
-
-        #### RANDOM APPLIED FORCES FOR TESTING
-        self.appX = (random() - .5) * 10
-        self.appY = (random() - .5) * 10
+        self.size = size                # creature size in meters MAYBE WILL CHANGE TO BE A FUNCTION OF ENERGY
 
     def timeStep(self, deltaTime: float):
+        """Does a lot but basically just moves the creature a bit according to the deltaTime simulated"""
         # Testing CHANGE APPLIED FORCE TO BE MACHINE LEARNING OUTPUT
         if not self.outOfEnergy:
             appliedForceX = self.appX; appliedForceY = self.appY # applied force in Newtons
@@ -47,6 +45,7 @@ class Creature():
             if self.velX == 0 and self.velY == 0: # No energy & No movement -> fruit
                 self.finished = 1
         
+
 
         # Calculate Friction Force
 
@@ -71,8 +70,10 @@ class Creature():
             forceY = appliedForceY - frictionForceY
 
 
+
         # Calculate acceleration from force and mass
         accX = forceX / mass; accY = forceY / mass
+
 
 
         # Calculate velocity from acceleration and prevent unstable velocity oscillations around 0
@@ -89,13 +90,14 @@ class Creature():
         self.velY = accY * deltaTime + self.velY
 
 
+
         # Update positions and ensure not going out of bounds
 
         oldX = self.x; oldY = self.y                                # Record old positions for energy usage calculation
         self.x = self.x + self.velX * deltaTime                     # Update position according to velocity
         self.y = self.y + self.velY * deltaTime
 
-        WCVR = 0.5 # Wall Collision Velocity Retainment: 0 -> velocity = 0, 1 -> velocity = -velocity on wall collision
+        WCVR = 0.25 # Wall Collision Velocity Retainment: 0 -> velocity = 0, 1 -> velocity = -velocity on wall collision
         boundaryLeeway = 1
         # Check for hitting x boundaries and reduce acceleration to 0 and flip velocity if so
         if self.x - self.size / 2 < -boundaryLeeway:
@@ -111,7 +113,7 @@ class Creature():
         elif self.y + self.size / 2 > self.maxY + boundaryLeeway:
             self.y = self.maxY - self.size / 2
             self.velY = -abs(self.velY) * WCVR; accY = 0
-        
+
         if not self.outOfEnergy:            # Calculate energy used and determine if out of energy
             self.energy = self.energy - abs(self.x - oldX) * abs(forceX) - abs(self.y - oldY) * abs(forceY)
 
@@ -119,7 +121,13 @@ class Creature():
                 self.outOfEnergy = 1
                 self.energy = 0
 
+    def absorbEnergy(self, target: Union[Creature, Fruit]):
+        """Absorb energy target"""
+        self.energy += target.getReducedEnergy(self.aggressiveness)
+        self.outOfEnergy = 0
+
     def findNearestThreats(self, creatures: List[Creature]) -> List[Creature]:
+        """Returns a list of threats, sorted from highest threat level to lowest"""
         threats = []
 
         for possibleThreat in (c for c in creatures if c.aggressiveness > self.aggressiveness):
@@ -139,10 +147,11 @@ class Creature():
 
     def calcThreatLevel(self, threat: Creature) -> float:
         """Calculate threat level from distance and energy reward for predator"""
-        distance = sqrt((threat.x - self.x)**2 + (threat.y - self.y)**2)
+        distance = self.getDistance(threat)
         return self.getReducedEnergy(threat.aggressiveness) / maximumEnergy / (distance + 0.0001) # distance should never be 0 once collision is implemented and this + 0.0001 can be removed with an assert distance > 0 beforehand
 
     def findNearestTargets(self, creatures: List[Creature], fruits: List[Fruit]) -> List[Union[Creature, Fruit]]:
+        """Returns a list of targets, sorted from highest target level to lowest"""
         targets = []
 
         # Check for Creature targets
@@ -156,7 +165,7 @@ class Creature():
 
     def calcTargetLevel(self, target: Union[Creature, Fruit]) -> float:
         """Calculate target level from distance and reduced energy reward"""
-        distance = sqrt((target.x - self.x)**2 + (target.y - self.y)**2)
+        distance = self.getDistance(target)
         return target.getReducedEnergy(self.aggressiveness) / maximumEnergy / (distance + 0.0001)
 
     def insertTarget(self, targets: List[Union[Creature, Fruit]], target: Union[Creature, Fruit], targetLevel: float):
@@ -170,6 +179,10 @@ class Creature():
             else:
                 i += 1
         targets.insert(targetIndex, target)
+
+    def getDistance(self, toCreature: Union[Creature, Fruit]) -> float:
+        """Returns the distance between this creature and another creature or fruit"""
+        return sqrt((toCreature.x - self.x)**2 + (toCreature.y - self.y)**2)
 
     def getAngle(self, source: Union[Creature, Fruit]) -> float:
         """returns 0-1 according to direction to source from self (0 for +x, 0.25 for -y, 0.5 for -x, 0.75 for +y)"""
@@ -191,6 +204,35 @@ class Creature():
         
         return angle
 
+    def findWalls(self) -> List[float]:
+        """Returns a list of 4 floats: [dist to x=0 / maxX, dist to y=0 / maxY, dist to x=maxX / maxX, dist to y=maxY / maxY]\n
+        All values maxed and mined to ensure they return between 0-1"""
+        return [max(0, self.x1) / self.maxX, max(0, self.y1) / self.maxX, min(self.maxX, self.maxX - self.x) / self.maxX, min(self.maxY, self.maxY - self.y) / self.maxY ]
+
+    def getReducedEnergy(self, predatorAggressiveness: float):
+        """Returns the energy a predator would obtain from consuming this creature, given their aggressiveness difference and this creature's energy level"""
+        aggDiff = predatorAggressiveness - self.aggressiveness
+        assert abs(aggDiff) == aggDiff # Ensure difference is positive
+
+        # equation below means higher predator aggressiveness -> higher energy returned (since higher aggressiveness -> higher aggDiff)
+        # and also higher aggressivness difference -> higher energy returned
+        # Ex. aggDiff = 1: energy returned=100%, aggDiff = 0: energyReturned=50% (Note: aggDiff should never = 0 exactly)
+        return self.energy * aggDiff + self.energy * (1 - aggDiff) / 2
+
+    def x1(self) -> float:
+        """Returns the farthest left value of this creature"""
+        return self.x - self.size / 2
+    def x2(self) -> float:
+        """Returns the farthest right value of this creature"""
+        return self.x + self.size / 2
+    def y1(self) -> float:
+        """Returns the farthest up value of this creature"""
+        return self.y - self.size / 2
+    def y2(self) -> float:
+        """Returns the farthest down value of this creature"""
+        return self.y + self.size / 2
+
+        
     ###############################################
     ## IF I WANT TO CHECK TYPE LATER THIS IS HOW ##
     ###############################################
@@ -204,26 +246,3 @@ class Creature():
     ###############################################
     ###############################################
     ###############################################
-
-    def findWalls(self) -> List[float]:
-        """Returns a list of 4 floats: [dist to x=0 / maxX, dist to y=0 / maxY, dist to x=maxX / maxX, dist to y=maxY / maxY]\n
-        All values maxed and mined to ensure they return between 0-1"""
-        return [max(0, self.x1) / self.maxX, max(0, self.y1) / self.maxX, min(self.maxX, self.maxX - self.x) / self.maxX, min(self.maxY, self.maxY - self.y) / self.maxY ]
-
-    def getReducedEnergy(self, predatorAggressiveness: float):
-        aggDiff = predatorAggressiveness - self.aggressiveness
-        assert abs(aggDiff) == aggDiff # Ensure difference is positive
-
-        # equation below means higher predator aggressiveness -> higher energy returned (since higher aggressiveness -> higher aggDiff)
-        # and also higher aggressivness difference -> higher energy returned
-        # Ex. aggDiff = 1: energy returned=100%, aggDiff = 0: energyReturned=50% (Note: aggDiff should never = 0 exactly)
-        return self.energy * aggDiff + self.energy * (1 - aggDiff) / 2
-
-    def x1(self) -> float:
-        return self.x - self.size / 2
-    def x2(self) -> float:
-        return self.x + self.size / 2
-    def y1(self) -> float:
-        return self.y - self.size / 2
-    def y2(self) -> float:
-        return self.y + self.size / 2

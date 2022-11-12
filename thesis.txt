@@ -1,0 +1,66 @@
+blobs start round by going to closest food to them, if they arrive and still have enough space around them that’s unpopulated, they eat, if 2 blobs arrive in same space, they will fight or one will flee.
+
+OLD NEWS: turn based rounds, all blobs choose to stay, move, eat, or attack at each turn. can only eat if away from other blobs. order of operators: blobs move, then those that haven’t moved attempt their operation such as eat or attack.
+
+OLD NEWS: Start with 20 by 20 grid, place 25 foods and 20 blobs randomly, 12 hours in day. food randomly replaced at morning, blobs don’t move overnight.
+start with 25 Energy, max energy 100
+eat food = +25 Energy
+wait 1 hour = -1 Energy
+travel 1 space = -3 Energy
+sleep through night = -3 Energy
+if Energy = 0 -> Dead
+start fight = -1 Energy per attack
+get fought = -2 Energy per attack
+if one fighter dies then other wins and gets food
+Health = rate * Energy + baseHealth
+Aggression = -rate2 * Energy + 100
+baseHealth = 50
+
+At no food:
+If Health > baseHealth * 3 -> Stay
+Else -> Move toward nearest food based on aggression
+If Health < Aggression -> nearest food
+If Health > Aggression -> nearest food without blob there
+
+At Food and Encounter:
+If Health < Aggression -> Attack
+If Health > Aggression -> Flee toward next nearest food
+If Health == Aggression -> 50/50 chance
+if one attacks but other flees, only attacker loses damage enemy
+
+At Food but no Encounter:
+first If nearestNeighbor < or = 3 spaces (manhattan distance) then wait 1 hour
+else eat
+if couldn’t eat, at next hour if nearestNeighbor < or = 2 spaces, then wait 1 hour
+else eat
+if couldn’t eat, at next hour if nearestNeighbor = 1 space, then wait 1 hour
+else eat
+else either there should be an encounter, end of night, or blob can eat at next hour even if nearestNeighbor = 1 because nearestNeighbor must not be moving.
+
+OLD NEWS: once a blob starts moving toward a food, keep it moving toward same food by assigning it as targetFood and at new day all targetFood should be initially calculated as closest newly placed food based on aggression as determined above
+
+create 3 3D plots of survival % after 5, 10, 25 days with rate and rate2 both in range 0-1 intervals of .1
+
+for testing purposes, run one hour per button press.
+for data run simulation for given conditions and produce the 3 survival % datapoints for plot, if possible run all 100 condition settings multiple times and average survival %s
+
+export data as a csv file if able to do 100 simulations at a time
+
+
+machine learning
+
+allcreatures have different neural nets passed on during reproduction
+track aggressiveness levels over time
+
+inputs -> directions to nearest source of food and enemies and distances to walls
+outputs -> appliedForceX and appliedForceY
+
+or if not machine learning then see how values affect outcome
+
+think about energy constant energy loss even if not moving
+
+should starting and max energy be constant among all or dependent on size
+
+https://www.youtube.com/watch?v=N3tRFayqVtk&list=WL&index=42&t=1486s
+https://www.youtube.com/watch?v=qwrp3lB-jkQ&list=WL&index=33&t=509s
+https://www.youtube.com/watch?v=PJl4iabBEz0&list=WL&index=37
