@@ -15,8 +15,8 @@ class Fruit():
             assert x.finished                   # Ensure x is a finished Creature (cannot import Creature :( due to circular import)
             creature=x
             self.x = creature.x; self.y = creature.y
-            self.size = creature.size / 2       # Size is half of old creature size
-            self.energy = 4 * pi * (creature.size / 2)**3 * 0.2387 / 3  # Energy for Creature body is determined from volume (20 m -> 1000 J)
+            self.size = 5                       # Size is 5 for old creatures turned fruits
+            self.energy = 10000                 # Energy for Creature body is 10000 Joules
             self.reductionValue = 1.5 - creature.aggressiveness # How much aggressiveness causes energy value to decrease, ideally 1 to 2
             self.creatureBody = True
     

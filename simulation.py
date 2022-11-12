@@ -26,10 +26,10 @@ class Simulation():
 
     def generateCreatures(self):
         for i in range(self.creatureCount):
-            size=12
+            size= 7.5
             # will eventually want to ensure creatures are not starting within each other
-            x = randint(size / 2, self.maxY - size / 2)
-            y = randint(size / 2, self.maxY - size / 2)
+            x = randint(math.ceil(size / 2), math.floor(self.maxX - size / 2))
+            y = randint(math.ceil(size / 2), math.floor(self.maxY - size / 2))
             self.creatures.append(Creature(size, x, y, maxX=self.maxX, maxY=self.maxY, aggressiveness=random()))
 
     def generateFruit(self):

@@ -16,7 +16,7 @@ frictionCoeff = 0.25 # unitless, basically percentage of gravitational force app
 startingEnergy = 25000 # Joules ( N * m)
 
 class Creature():
-    def __init__(self, size: int, x: int, y: int, maxX: int, maxY: int, aggressiveness: float, hasEnergy: bool = True):
+    def __init__(self, size: float, x: float, y: float, maxX: int, maxY: int, aggressiveness: float, hasEnergy: bool = True):
         # Simulation variables
         self.maxX = maxX # max X position in meters
         self.maxY = maxY # max Y position in meters
@@ -56,19 +56,11 @@ class Creature():
         if (sqrt(self.velX**2 + self.velY**2) == 0):
             frictionForceX = 0; frictionForceY = 0        # No friction if no movement
         else: # exact equations for separting friction into x and y components (sign always same as velocity in that direction)
-            frictionForceX = frictionForce * self.velX / (self.velX**2 + self.velY**2)
-            frictionForceY = frictionForce * self.velY / (self.velX**2 + self.velY**2)
+            frictionForceX = frictionForce * self.velX / ((self.velX**2 + self.velY**2) ** 0.5)
+            frictionForceY = frictionForce * self.velY / ((self.velX**2 + self.velY**2) ** 0.5)
 
-            # Apply X component of friction against velocity direction ensuring appliedForce overcomes friction
-        if (abs(appliedForceX) < frictionForce):
-            forceX = -frictionForceX
-        else:
-            forceX = appliedForceX - frictionForceX
-            # Apply Y component of friction against velocity direction ensuring appliedForce overcomes friction
-        if (abs(appliedForceY) < frictionForce):
-            forceY = -frictionForceY
-        else: 
-            forceY = appliedForceY - frictionForceY
+        forceX = appliedForceX - frictionForceX
+        forceY = appliedForceY - frictionForceY
 
 
         # Calculate acceleration from force and mass
@@ -114,11 +106,13 @@ class Creature():
 
         # Calculate energy usage and determine out of energy status
         if not self.outOfEnergy:
-            self.energy = self.energy - abs(self.x - oldX) * abs(forceX) - abs(self.y - oldY) * abs(forceY)
+            self.energy = self.energy - abs(self.x - oldX) * abs(appliedForceX) - abs(self.y - oldY) * abs(appliedForceY)
 
             if self.energy <= 0:
                 self.outOfEnergy = 1
                 self.energy = 0
+                
+            self.adjustSize()
 
     def absorbEnergy(self, target: Creature | Fruit):
         """Absorb energy target"""
@@ -127,9 +121,10 @@ class Creature():
 
         if self.energy > 4 * self.maximumEnergy / 5:
             self.energy -= self.maximumEnergy / 5
-            spawnChild = True
+            self.spawnChild = True
 
         self.energy = min(self.maximumEnergy, self.energy)
+        self.adjustSize()
 
     # EVENTUALLY (ONCE ML IS ADDED) CAN CHANGE first/second elements to be 3-tuples of tuples with (level, distance, angle) instead of (target/threat, level, angle)
     # Currently for testing I need creature/fruit itself to calculate x and y applied force 
@@ -230,6 +225,10 @@ class Creature():
         # and also higher aggressivness difference -> higher energy returned
         # Ex. aggDiff = 1: energy returned=100%, aggDiff = 0: energyReturned=50% (Note: aggDiff should never = 0 exactly)
         return self.energy * aggDiff + self.energy * (1 - aggDiff) / 2
+
+    def adjustSize(self) -> float:
+        self.size = 5 + 0.03 * (self.energy * 3 * pi / 4) ** (1/2)
+
 
     def x1(self) -> float:
         """Returns the farthest left value of this creature"""
