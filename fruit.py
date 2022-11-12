@@ -1,8 +1,10 @@
 from math import pi
 
+from numpy import isin
+
 class Fruit():
-    def __init__(self, x, y=0, size=10, energy=3000, reductionRate=1.5):
-        if isinstance(x, int):
+    def __init__(self, x, y=0, size=10, energy=15000, reductionRate=1.5):
+        if isinstance(x, float) or isinstance(x, int):
             self.x = x; self.y = y
             self.size = size
             self.energy = energy                # Energy obtained for 0 aggressiveness, maybe determine from size

@@ -30,7 +30,7 @@ class SimulationView(tk.Frame):
         color = "#%02x%02x%02x" % (int(creature.aggressiveness * 255), int((1 - creature.aggressiveness) * 255), 0)
         self.canvas.create_oval(self.calcX(creature.x1()), self.calcY(creature.y1()), self.calcX(creature.x2()), self.calcY(creature.y2()), fill=color, outline="yellow")
         self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.velX), self.calcY(creature.y + creature.velY), fill="green")
-        self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.appX * 5), self.calcY(creature.y + creature.appY * 5), fill="blue")
+        self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.appX * 20), self.calcY(creature.y + creature.appY * 20), fill="blue")
 
     def drawFruit(self, fruit: Fruit):
         self.canvas.create_oval(self.calcX(fruit.x1()), self.calcY(fruit.y1()), self.calcX(fruit.x2()), self.calcY(fruit.y2()), fill="#F30", outline="red")

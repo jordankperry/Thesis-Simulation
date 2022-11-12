@@ -63,18 +63,18 @@ class Simulation():
 
                 if not creature.outOfEnergy:
                     creature.appX += (state[0][0][0].x - creature.x) / 20 if state[0][0][0].x > 0 else 0
-                    creature.appX += (state[0][1][0].x - creature.x) / 20 if state[0][1][0].x > 0 else 0
-                    creature.appX += (state[0][2][0].x - creature.x) / 20 if state[0][2][0].x > 0 else 0
-                    creature.appY += (state[0][0][0].y - creature.y) / 20 if state[0][0][0].y > 0 else 0
-                    creature.appY += (state[0][1][0].y - creature.y) / 20 if state[0][1][0].y > 0 else 0
-                    creature.appY += (state[0][2][0].y - creature.y) / 20 if state[0][2][0].y > 0 else 0
+                    # creature.appX += (state[0][1][0].x - creature.x) * state[0][1][1] / state[0][0][1] / 20 if state[0][1][0].x > 0 else 0
+                    # creature.appX += (state[0][2][0].x - creature.x) * state[0][2][1] / state[0][0][1] / 20 if state[0][2][0].x > 0 else 0
+                    creature.appY += (state[0][0][0].y - creature.y)/ 20 if state[0][0][0].y > 0 else 0
+                    # creature.appY += (state[0][1][0].y - creature.y) * state[0][1][1] / state[0][0][1] / 20 if state[0][1][0].y > 0 else 0
+                    # creature.appY += (state[0][2][0].y - creature.y) * state[0][2][1] / state[0][0][1] / 20 if state[0][2][0].y > 0 else 0
                     
-                    creature.appX -= (state[1][0][0].x - creature.x) / 20 if state[1][0][0].x > 0 else 0
-                    creature.appX -= (state[1][1][0].x - creature.x) / 20 if state[1][1][0].x > 0 else 0
-                    creature.appX -= (state[1][2][0].x - creature.x) / 20 if state[1][2][0].x > 0 else 0
-                    creature.appY -= (state[1][0][0].y - creature.y) / 20 if state[1][0][0].y > 0 else 0
-                    creature.appY -= (state[1][1][0].y - creature.y) / 20 if state[1][1][0].y > 0 else 0
-                    creature.appY -= (state[1][2][0].y - creature.y) / 20 if state[1][2][0].y > 0 else 0
+                    # creature.appX -= (state[1][0][0].x - creature.x) / 20 if state[1][0][0].x > 0 else 0
+                    # creature.appX -= (state[1][1][0].x - creature.x) * state[1][1][1] / state[1][0][1] / 20 if state[1][1][0].x > 0 else 0
+                    # creature.appX -= (state[1][2][0].x - creature.x) * state[1][2][1] / state[1][0][1] / 20 if state[1][2][0].x > 0 else 0
+                    # creature.appY -= (state[1][0][0].y - creature.y) / 20 if state[1][0][0].y > 0 else 0
+                    # creature.appY -= (state[1][1][0].y - creature.y) * state[1][1][1] / state[1][0][1] / 20 if state[1][1][0].y > 0 else 0
+                    # creature.appY -= (state[1][2][0].y - creature.y) * state[1][2][1] / state[1][0][1] / 20 if state[1][2][0].y > 0 else 0
 
                 creature.timeStep(self.deltaTime)
                 self.handleCollisions(creature)

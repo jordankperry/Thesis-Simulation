@@ -13,7 +13,7 @@ g = 9.81 # m / s**2
 # Experimental Values
 density = 0.0005        # creature density in kg / m^3
 frictionCoeff = 0.25 # unitless, basically percentage of gravitational force applied against kinetic movement
-startingEnergy = 10000 # Joules ( N * m)
+startingEnergy = 25000 # Joules ( N * m)
 
 class Creature():
     def __init__(self, size: int, x: int, y: int, maxX: int, maxY: int, aggressiveness: float, hasEnergy: bool = True):
@@ -30,7 +30,7 @@ class Creature():
         # Creature characteristics
         self.aggressiveness = aggressiveness
         self.energy = startingEnergy if hasEnergy else 0
-        self.maximumEnergy = 25000 if hasEnergy else 1e20   # Maximum energy in Joules
+        self.maximumEnergy = 100000 if hasEnergy else 1e20   # Maximum energy in Joules
         self.spawnChild = False         # True when creature has reached 4/5 of maximum energy and has spent energy to reproduce.
         self.outOfEnergy = False        # Cannot apply more force after outOfEnergy = 1
         self.finished = False           # Finished = 1 if outOfEnergy and velX = 0 and velY = 0 (turn into a "fruit")
@@ -170,7 +170,7 @@ class Creature():
         """Calculate threat level from distance and energy reward for predator"""
         distance = self.getDistance(threat)
         assert distance > 0
-        return (self.getReducedEnergy(threat.aggressiveness) / self.maximumEnergy) / (distance ** 10) # distance should never be 0 once collision is implemented and this + 0.0001 can be removed with an assert distance > 0 beforehand
+        return (self.getReducedEnergy(threat.aggressiveness) / self.maximumEnergy) / ((distance / 10) ** 2) # distance should never be 0 once collision is implemented and this + 0.0001 can be removed with an assert distance > 0 beforehand
 
     def findNearestTargets(self, creatures: List[Creature], fruits: List[Fruit]) -> List[Creature | Fruit]:
         """Returns a list of targets, sorted from highest target level to lowest"""
@@ -190,7 +190,7 @@ class Creature():
         """Calculate target level from distance and reduced energy reward"""
         distance = self.getDistance(target)
         assert distance > 0
-        return (target.getReducedEnergy(self.aggressiveness) / self.maximumEnergy) / (distance ** 10)
+        return (target.getReducedEnergy(self.aggressiveness) / self.maximumEnergy) / ((distance / 10) ** 2)
 
     def getDistance(self, toCreature: Creature | Fruit) -> float:
         """Returns the distance between this creature and another creature or fruit"""
