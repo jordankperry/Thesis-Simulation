@@ -1,7 +1,7 @@
 from math import pi
 
 class Fruit():
-    def __init__(self, x, y=0, size=10, energy=100, reductionRate=1.5):
+    def __init__(self, x, y=0, size=10, energy=3000, reductionRate=1.5):
         if isinstance(x, int):
             self.x = x; self.y = y
             self.size = size
@@ -19,7 +19,7 @@ class Fruit():
             self.creatureBody = True
     
     def getReducedEnergy(self, aggressiveness):
-        return self.energy * (1 - 0.75*aggressiveness)**self.reductionValue
+        return self.energy * (1 - 0.75*aggressiveness) ** self.reductionValue
         
     def x1(self) -> float:
         return self.x - self.size / 2

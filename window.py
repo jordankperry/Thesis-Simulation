@@ -30,7 +30,7 @@ class SimulationView(tk.Frame):
         color = "#%02x%02x%02x" % (int(creature.aggressiveness * 255), int((1 - creature.aggressiveness) * 255), 0)
         self.canvas.create_oval(self.calcX(creature.x1()), self.calcY(creature.y1()), self.calcX(creature.x2()), self.calcY(creature.y2()), fill=color, outline="yellow")
         self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.velX), self.calcY(creature.y + creature.velY), fill="green")
-        self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.appX * 25), self.calcY(creature.y + creature.appY * 25), fill="blue")
+        self.canvas.create_line(self.calcX(creature.x), self.calcY(creature.y), self.calcX(creature.x + creature.appX * 5), self.calcY(creature.y + creature.appY * 5), fill="blue")
 
     def drawFruit(self, fruit: Fruit):
         self.canvas.create_oval(self.calcX(fruit.x1()), self.calcY(fruit.y1()), self.calcX(fruit.x2()), self.calcY(fruit.y2()), fill="#F30", outline="red")
@@ -50,7 +50,7 @@ def main():
     info = tk.Label(text="Green is velocity, Blue is Applied Force (Scaled 5x)")
     info.pack()
 
-    sim = Simulation(creatureCount=20, simulationTime=120, deltaTime=0.1, maxX=1000, maxY=1000)
+    sim = Simulation(creatureCount=20, simulationTime=120, deltaTime=0.1, maxX=1000, maxY=1000, fruitSpawnTime=3, startingFruitCount=10)
     window.protocol("WM_DELETE_WINDOW", lambda s=sim, w=window: exitSim(s, w))
     simView.setScale(sim.maxX, sim.maxY)
 
@@ -73,7 +73,7 @@ def main():
 def exitSim(sim: Simulation, window: tk.Tk):
     sim.complete = True
     window.destroy()
-    
+
 if __name__ == "__main__":
     main()
     
