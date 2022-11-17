@@ -15,7 +15,7 @@ class Fruit():
             assert x.finished, "parameter x must be of Type Creature, float, or int" # Check x is indeed a creature type and is finished
             creature=x
             self.x = creature.x; self.y = creature.y
-            self.size = 5                       # Size is 5 for old creatures turned fruits
+            self.size = 8                       # Size is 5 for old creatures turned fruits
             self.energy = 10000                 # Energy for Creature body is 10000 Joules
             self.reductionValue = 1.5 - creature.aggressiveness # How much aggressiveness causes energy value to decrease, ideally 1 to 2
             self.creatureBody = True

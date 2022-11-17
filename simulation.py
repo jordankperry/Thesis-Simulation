@@ -1,6 +1,6 @@
 from random import randint, random
 from re import S
-from typing import List
+from typing import List, Tuple
 from creature import Creature
 from fruit import Fruit
 import math
@@ -26,14 +26,24 @@ class Simulation():
 
     def generateCreatures(self):
         for i in range(self.creatureCount):
-            size= 7.5
-            # will eventually want to ensure creatures are not starting within each other
-            x = randint(math.ceil(size / 2), math.floor(self.maxX - size / 2))
-            y = randint(math.ceil(size / 2), math.floor(self.maxY - size / 2))
+            size= 8
+            x, y = self.randomLocation(size)
+            
+            ci = 0
+            while ci < len(self.creatures):
+                if math.sqrt((x - self.creatures[ci].x) ** 2 + (y - self.creatures[ci].y) ** 2) < size + self.creatures[ci].size + 2:
+                    # If the creature is spawning within 2 spaces of another creature, re-determine position and reset index for checking creature closeness
+                    x, y = self.randomLocation(size)
+                    ci = 0
+
             self.creatures.append(Creature(size, x, y, maxX=self.maxX, maxY=self.maxY, aggressiveness=random()))
 
+    def randomLocation(self, size: float) -> Tuple[float, float]:
+        return (randint(math.ceil(size / 2), math.floor(self.maxX - size / 2)), randint(math.ceil(size / 2), math.floor(self.maxY - size / 2)))
+
+
     def generateFruit(self):
-        size = 20
+        size = 12
         self.fruits.append(Fruit(x=randint(size, self.maxX - size), y=randint(size, self.maxY - size), size=size))
 
     def runTimeStep(self, numberOfSteps=1):
@@ -46,48 +56,30 @@ class Simulation():
                 self.lastFruitSpawnTime += self.fruitSpawnTime
 
             for creature in self.creatures:
-                # GO TOWARDS PRIMARY TARGET AND AWAY FROM PRIMARY THREAT FOR TESTING
-                # targets = creature.findNearestTargets(self.creatures, self.fruits)
-                # if len(targets) > 0 and not creature.outOfEnergy:
-                #     creature.appX = (targets[0].x - creature.x) / 20
-                #     creature.appY = (targets[0].y - creature.y) / 20 # as they chase, they're all using different amounts of energy and thus their value to others changes
-                # else:
-                #     creature.appX = 0; creature.appY = 0
-                # threats = creature.findNearestThreats(self.creatures)
-                # if len(threats) > 0 and not creature.outOfEnergy:
-                #     creature.appX -= (threats[0].x - creature.x) / 30
-                #     creature.appY -= (threats[0].y - creature.y) / 30
-
-                state = creature.getState(self.creatures, self.fruits)
-                creature.appX = 0; creature.appY = 0
-
-                if not creature.outOfEnergy:
-                    creature.appX += (state[0][0][0].x - creature.x) / 20 if state[0][0][0].x > 0 else 0
-                    # creature.appX += (state[0][1][0].x - creature.x) * state[0][1][1] / state[0][0][1] / 20 if state[0][1][0].x > 0 else 0
-                    # creature.appX += (state[0][2][0].x - creature.x) * state[0][2][1] / state[0][0][1] / 20 if state[0][2][0].x > 0 else 0
-                    creature.appY += (state[0][0][0].y - creature.y)/ 20 if state[0][0][0].y > 0 else 0
-                    # creature.appY += (state[0][1][0].y - creature.y) * state[0][1][1] / state[0][0][1] / 20 if state[0][1][0].y > 0 else 0
-                    # creature.appY += (state[0][2][0].y - creature.y) * state[0][2][1] / state[0][0][1] / 20 if state[0][2][0].y > 0 else 0
-                    
-                    # creature.appX -= (state[1][0][0].x - creature.x) / 20 if state[1][0][0].x > 0 else 0
-                    # creature.appX -= (state[1][1][0].x - creature.x) * state[1][1][1] / state[1][0][1] / 20 if state[1][1][0].x > 0 else 0
-                    # creature.appX -= (state[1][2][0].x - creature.x) * state[1][2][1] / state[1][0][1] / 20 if state[1][2][0].x > 0 else 0
-                    # creature.appY -= (state[1][0][0].y - creature.y) / 20 if state[1][0][0].y > 0 else 0
-                    # creature.appY -= (state[1][1][0].y - creature.y) * state[1][1][1] / state[1][0][1] / 20 if state[1][1][0].y > 0 else 0
-                    # creature.appY -= (state[1][2][0].y - creature.y) * state[1][2][1] / state[1][0][1] / 20 if state[1][2][0].y > 0 else 0
+                ableToMove = not creature.outOfEnergy
+                if ableToMove:
+                    state = creature.getState(self.creatures, self.fruits)
+                    flatState = creature.getFlatState(state)
+                    appliedVelocities = creature.brain.getAppliedVelocities(state, flatState, creature.x, creature.y)
+                    creature.appX, creature.appY = appliedVelocities
 
                 creature.timeStep(self.deltaTime)
                 self.handleCollisions(creature)
 
                 if creature.spawnChild:
-                    # CREATE A NEW CREATURE HERE BASED ON creature's ML model
+                    # CREATE A NEW CREATURE HERE BASED ON creature's NN model
                     pass
 
                 if creature.finished:
                     # If a creature is finished, turn it into a fruit with energy = 100 and reductionRate = 1.5-aggressiveness (Less reduction for predators consuming predator bodies)
                     self.fruits.append(Fruit(creature))
                     self.creatures.remove(creature)
-                    
+                elif ableToMove:
+                    newFlatState = creature.getFlatState(creature.getState(self.creatures, self.fruits))
+                    creature.brain.trainMemory(flatState, appliedVelocities, creature.getReward(), newFlatState)
+                    creature.brain.remember(flatState, appliedVelocities, creature.getReward(), newFlatState)
+                    creature.brain.move()
+
             self.timeStep += 1
         
         if (self.timeStep * self.deltaTime >= self.simulationTime):
