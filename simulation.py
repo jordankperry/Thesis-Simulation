@@ -92,6 +92,7 @@ class Simulation():
 
             self.timeStep += 1
         
+        # Mark self.complete if simulation is over simulation time.
         if (self.timeStep * self.deltaTime >= self.simulationTime):
             self.complete = True
 

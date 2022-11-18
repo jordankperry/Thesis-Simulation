@@ -30,7 +30,7 @@ class Predator(Creature):
         # Cannot make threats a list of Prey because it would create a circular import so ensure c is a creature and not a predator
         targets: list[Creature] = list(c for c in creatures if isinstance(c, Creature) and not isinstance(c, Predator)).sort(key=self.getDistance)
         self.setTargetDistChange(targets)
-        selflastTargets = targets
+        self.lastTargets = targets
 
         targetsValues = []
         # If target/threat exists then add distances, else add (0,0) which represents infinite distance
@@ -38,7 +38,7 @@ class Predator(Creature):
             targetsValues.append(self.getDistances[targets[i]] if len(targets) > i else (0, 0))
 
         targetsTuple = (targetsValues[0], targetsValues[1], targetsValues[2])
-        state = (targetsTuple, tuple(self.findWalls()), (self.velX, self.velY))
+        state = (targetsTuple, self.findWalls(), (self.velX, self.velY))
 
         return state
         

@@ -27,7 +27,7 @@ def main():
         window.geometry("900x800+300+50")
         window.update()
 
-        info = tk.Label(text="Green is velocity, Blue is Applied Force (Scaled 5x)")
+        info = tk.Label(text="Green shows velocity")
         info.pack()
 
     # Create simulation and setup simulation rendering

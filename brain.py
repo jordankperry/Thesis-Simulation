@@ -10,6 +10,8 @@ GAMMA = 0.7
 
 sampleSize = 1000
 
+# BRAIN WILL NEED TO BE SEPARTED INTO TWO PREDATOR BRAIN VS PREY BRAIN
+
 class Brain:
     def __init__(self) -> None:
         self.moves = 0
