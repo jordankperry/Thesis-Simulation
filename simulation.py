@@ -1,13 +1,15 @@
 from random import randint, random
 from re import S
 from typing import List, Tuple
-from creature import Creature
+from prey import Prey
+from predator import Predator
 from fruit import Fruit
 import math
 
 class Simulation():
-    def __init__(self, creatureCount: int, simulationTime=150, deltaTime=0.1, maxX=500, maxY=500, fruitSpawnTime=5, startingFruitCount=5):
-        self.creatureCount = creatureCount
+    def __init__(self, preyCount: int, predatorCount: int, simulationTime=150, deltaTime=0.1, maxX=500, maxY=500, fruitSpawnTime=5, startingFruitCount=5):
+        self.preyCount = preyCount
+        self.predatorCount = predatorCount
         self.simulationTime = simulationTime    # Number of seconds for simulation to simulate (not actual duration of animation)
         self.deltaTime = deltaTime              # time increment between simulation ticks
         self.timeStep = 0                       # current time step
@@ -25,21 +27,28 @@ class Simulation():
         self.generateCreatures()
 
     def generateCreatures(self):
-        for i in range(self.creatureCount):
-            size= 8
-            x, y = self.randomLocation(size)
-            
-            ci = 0
-            while ci < len(self.creatures):
-                if math.sqrt((x - self.creatures[ci].x) ** 2 + (y - self.creatures[ci].y) ** 2) < size + self.creatures[ci].size + 2:
-                    # If the creature is spawning within 2 spaces of another creature, re-determine position and reset index for checking creature closeness
-                    x, y = self.randomLocation(size)
-                    ci = 0
+        size= 8
 
-            self.creatures.append(Creature(size, x, y, maxX=self.maxX, maxY=self.maxY, aggressiveness=random()))
+        for i in range(self.preyCount):
+            x, y = self.randomLocation(size)
+            self.creatures.append(Prey(size, x, y, maxX=self.maxX, maxY=self.maxY))
+        for i in range(self.predatorCount):
+            x, y = self.randomLocation(size)
+            self.creatures.append(Predator(size, x, y, maxX=self.maxX, maxY=self.maxY))
 
     def randomLocation(self, size: float) -> Tuple[float, float]:
-        return (randint(math.ceil(size / 2), math.floor(self.maxX - size / 2)), randint(math.ceil(size / 2), math.floor(self.maxY - size / 2)))
+        x, y = (randint(math.ceil(size / 2), math.floor(self.maxX - size / 2)), randint(math.ceil(size / 2), math.floor(self.maxY - size / 2)))
+        i = 0
+
+        while i < len(self.creatures):
+            if math.sqrt((x - self.creatures[i].x) ** 2 + (y - self.creatures[i].y) ** 2) < size + self.creatures[i].size + 2:
+                # If the creature is spawning within 2 spaces of another creature, re-determine position and reset index for checking creature closeness
+                x, y = (randint(math.ceil(size / 2), math.floor(self.maxX - size / 2)), randint(math.ceil(size / 2), math.floor(self.maxY - size / 2)))
+                i = 0
+            else:
+                i += 1
+        
+        return (x, y)
 
 
     def generateFruit(self):
