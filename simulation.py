@@ -1,6 +1,7 @@
 from random import randint, random
 from re import S
 from typing import List, Tuple
+from creature import Creature
 from prey import Prey
 from predator import Predator
 from fruit import Fruit
@@ -27,11 +28,12 @@ class Simulation():
         self.generateCreatures()
 
     def generateCreatures(self):
-        size= 8
+        size = 8
 
-        for i in range(self.preyCount):
+        for _ in range(self.preyCount):
             x, y = self.randomLocation(size)
             self.creatures.append(Prey(size, x, y, maxX=self.maxX, maxY=self.maxY))
+
         for i in range(self.predatorCount):
             x, y = self.randomLocation(size)
             self.creatures.append(Predator(size, x, y, maxX=self.maxX, maxY=self.maxY))
@@ -50,7 +52,6 @@ class Simulation():
         
         return (x, y)
 
-
     def generateFruit(self):
         size = 12
         self.fruits.append(Fruit(x=randint(size, self.maxX - size), y=randint(size, self.maxY - size), size=size))
@@ -60,7 +61,7 @@ class Simulation():
         while (self.timeStep < stopTimeStep):
             print("Running time step #", self.timeStep, " (", round(self.timeStep * self.deltaTime, 2), "-", round((self.timeStep + 1) * self.deltaTime, 2), "s):", sep='')
 
-            if self.timeStep * self.deltaTime  > self.lastFruitSpawnTime + self.fruitSpawnTime:
+            while self.timeStep * self.deltaTime  > self.lastFruitSpawnTime + self.fruitSpawnTime:
                 self.generateFruit()
                 self.lastFruitSpawnTime += self.fruitSpawnTime
 
@@ -72,7 +73,7 @@ class Simulation():
                     appliedVelocities = creature.brain.getAppliedVelocities(state, flatState, creature.x, creature.y)
                     creature.appX, creature.appY = appliedVelocities
 
-                creature.timeStep(self.deltaTime)
+                creature.move(self.deltaTime)
                 self.handleCollisions(creature)
 
                 if creature.spawnChild:
@@ -94,19 +95,18 @@ class Simulation():
         if (self.timeStep * self.deltaTime >= self.simulationTime):
             self.complete = True
 
+    # Only handle consumption here, if a prey move too close to a predator by itself then it will happen after their next move
     def handleCollisions(self, creature: Creature):
-        for c in self.creatures:
-            if c != creature:
-                if creature.getDistance(c) < creature.size + c.size:
-                    # Only handle consumption here, if a prey move too close to a predator by itself then it will happen after their next move
-                    if creature.aggressiveness >= c.aggressiveness:
-                        creature.absorbEnergy(c)
-                        self.creatures.remove(c)
-
-        for f in self.fruits:
-            if creature.getDistance(f) < creature.size + f.size:
-                creature.absorbEnergy(f)
-                self.fruits.remove(f)
-
-    def completeSimulation(self):
-        self.runTimeStep(self.totalTimeSteps - 1 -self.timeStep)
+        """Checks if a creature has reached any of its targets and if so absorb their energy"""
+        for target in creature.lastTargets:
+            if creature.getDistance(target) < 0:
+                    creature.absorbEnergy(target)
+                    if self.creatures.__contains__(target):
+                        self.creatures.remove(target)
+                    elif self.fruits.__contains__(target):
+                        self.fruits.remove(target)
+                    else:
+                        assert False, "Creature is absorbing target not found in simulation"
+            elif creature.getDistance(target) > 10:
+                # If the nearest target is more than 10 m away, break loop
+                break
