@@ -34,7 +34,7 @@ class Simulation():
             x, y = self.randomLocation(size)
             self.creatures.append(Prey(size, x, y, maxX=self.maxX, maxY=self.maxY))
 
-        for i in range(self.predatorCount):
+        for _ in range(self.predatorCount):
             x, y = self.randomLocation(size)
             self.creatures.append(Predator(size, x, y, maxX=self.maxX, maxY=self.maxY))
 
@@ -58,6 +58,7 @@ class Simulation():
 
     def runTimeStep(self, numberOfSteps=1):
         stopTimeStep = self.timeStep + numberOfSteps
+
         while (self.timeStep < stopTimeStep):
             print("Running time step #", self.timeStep, " (", round(self.timeStep * self.deltaTime, 2), "-", round((self.timeStep + 1) * self.deltaTime, 2), "s):", sep='')
 
@@ -72,6 +73,8 @@ class Simulation():
                     flatState = creature.getFlatState(state)
                     appliedVelocities = creature.brain.getAppliedVelocities(state, flatState, creature.x, creature.y)
                     creature.appX, creature.appY = appliedVelocities
+                else:
+                    creature.appX, creature.appY = 0, 0
 
                 creature.move(self.deltaTime)
                 self.handleCollisions(creature)
@@ -81,7 +84,7 @@ class Simulation():
                     pass
 
                 if creature.finished:
-                    # If a creature is finished, turn it into a fruit with energy = 100 and reductionRate = 1.5-aggressiveness (Less reduction for predators consuming predator bodies)
+                    # If a creature is finished, turn it into a fruit
                     self.fruits.append(Fruit(creature))
                     self.creatures.remove(creature)
                 elif ableToMove:
@@ -102,6 +105,7 @@ class Simulation():
         for target in creature.lastTargets:
             if creature.getDistance(target) < 0:
                     creature.absorbEnergy(target)
+
                     if self.creatures.__contains__(target):
                         self.creatures.remove(target)
                     elif self.fruits.__contains__(target):

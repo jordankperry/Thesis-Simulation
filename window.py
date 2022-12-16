@@ -4,7 +4,8 @@ from simulation import Simulation
 from simulationView import SimulationView
 
 # TEMPORARY LOCATION OF VARIABLE ADJUSTMENT
-creatureCount = 25
+preyCount = 10
+predatorCount = 10
 simTime = 120
 deltaTime = 0.1
 maxP = 1000
@@ -31,8 +32,8 @@ def main():
         info.pack()
 
     # Create simulation and setup simulation rendering
-    sim = Simulation(creatureCount=creatureCount, simulationTime=simTime, deltaTime=deltaTime, maxX=maxP, maxY=maxP, fruitSpawnTime=fruitSpawnTime, startingFruitCount=startingFruitCount)
-    saveStep() # Save starting configuration
+    sim = Simulation(preyCount, predatorCount, simulationTime=simTime, deltaTime=deltaTime, maxX=maxP, maxY=maxP, fruitSpawnTime=fruitSpawnTime, startingFruitCount=startingFruitCount)
+    saveStep(sim) # Save starting configuration
 
     # Perform simulation
     if not showSimulation:

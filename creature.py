@@ -16,20 +16,23 @@ startingEnergy = 25000 # Joules ( N * m)
 
 
 class Creature():
+
+    # Implemented functions for Base Creature
+
     def __init__(self, size: float, x: float, y: float, maxX: int, maxY: int):
         # Simulation variables
         self.maxX, self.maxY = maxX, maxY   # max position in meters
 
         # Position, velocity, and applied force variables
         self.x, self.y = x, y
-        self.velX, self.velY = 0,0      # Current velocities
-        self.appX, self.appY = 0,0      # Applied velocities
+        self.velX, self.velY = 0, 0      # Current velocities
+        self.appX, self.appY = 0, 0      # Applied velocities
 
         self.energy = startingEnergy
         self.energyChange = 0
         self.maximumEnergy = 100000     # Maximum energy in Joules
         self.spawnChild = False         # True when creature has reached 4/5 of maximum energy and has spent energy to reproduce.
-        self.outOfEnergy = False        # Cannot apply more force after outOfEnergy = 1
+        self.outOfEnergy = False        # Cannot use more energy after outOfEnergy = 1
         self.finished = False           # Finished = 1 if outOfEnergy and velX = 0 and velY = 0 (turn into a "fruit")
         self.size = size                # creature size in meters MAYBE WILL CHANGE TO BE A FUNCTION OF ENERGY
         self.brain = Brain()
@@ -39,20 +42,13 @@ class Creature():
         self.threatDistChange, self.targetDistChange = 0, 0
         self.lastTargets: list[Creature | Fruit] = []
 
-    # Implemented functions for Base Creature
-
     def move(self, deltaTime: float):
         """Call this after setting self.appX and self.appY to NN output.
         Moves creature a bit and handles energy usage but not consumption"""
-        # If creature has energy, assign velocities to NN output
-        if not self.outOfEnergy:
-            appVelX, appVelY = self.appX, self.appY # applied force in Newtons
-        else:
-            appVelX, appVelY = 0, 0                 # applied force is 0 if outOfEnergy
-            
-            # Check if outOfEnergy and friction has taken away all velocity
-            if self.velX == 0 and self.velY == 0:   # No energy & No movement -> fruit
-                self.finished = True
+        
+        # Check if outOfEnergy and friction has taken away all velocity
+        if self.outOfEnergy and self.velX == 0 and self.velY == 0:   # No energy & No movement -> fruit
+            self.finished = True
 
         # Calculate Friction Deceleration
         frictionAcc = frictionCoeff * g # constant currently
@@ -79,8 +75,8 @@ class Creature():
             # Determine new velocities
         if not self.outOfEnergy:
             # Creature is applied an average acceleration to boost from (currentVelocity - friction) to newVelocity
-            self.velX = max(-maxVelocityX, min(maxVelocityX, appVelX))
-            self.velY = max(-maxVelocityY, min(maxVelocityY, appVelY))
+            self.velX = max(-maxVelocityX, min(maxVelocityX, self.appX))
+            self.velY = max(-maxVelocityY, min(maxVelocityY, self.appY))
         else:
             self.velX += frictionAccX * deltaTime
             self.velY += frictionAccY * deltaTime
@@ -141,10 +137,10 @@ class Creature():
         (thus values can be negative or positive and larger values are closer)"""
         return (self.maxX / (toCreature.x - self.x), self.maxY / (toCreature.y - self.y))
 
-    def findWalls(self) -> Tuple[float]:
-        """Returns a 4-tuple of floats: (dist to x=0 / maxX, dist to y=0 / maxY, dist to x=maxX / maxX, dist to y=maxY / maxY)\n
-        All values maxed and mined to ensure they return between 0-1"""
-        return (max(0, self.x1()) / self.maxX, max(0, self.y1()) / self.maxX, min(self.maxX, self.maxX - self.x2()) / self.maxX, min(self.maxY, self.maxY - self.y2()) / self.maxY)
+    def findWalls(self) -> Tuple[float, float, float, float]:
+        """Returns a 4-tuple of floats: (dist to x=0, dist to y=0, dist to x=maxX, dist to y=maxY)\n
+        Higher values mean closer to wall (thus value = maxDist in that direction means at one wall and at opposite wall value = 1"""
+        return (self.maxX / max(1, self.x1()), self.maxY / max(1, self.y1()), self.maxX / max(1, self.maxX - self.x2()), self.maxY / max(1, self.maxY - self.y2()))
 
     def handleAbsorbEnergy(self):
         """Checks if Creature can spawn a child or is above maximum energy and adjusts creature charcteristics"""
@@ -191,4 +187,3 @@ class Creature():
     def getReward(self):
         """Calculates reward based on energy lost/gained over step, and threat/target level changes"""
         raise NotImplementedError()
-        return self.energyChange - self.threatChange + self.targetChange

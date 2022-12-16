@@ -1,4 +1,5 @@
 from __future__ import annotations
+from copy import copy
 from creature import Creature
 from fruit import Fruit
 from typing import Tuple
@@ -7,7 +8,7 @@ from predator import Predator
 
 class Prey(Creature):
     def __init__(self, size: float, x: float, y: float, maxX: int, maxY: int):
-        super.__init__(size, x, y, maxX, maxY)
+        super().__init__(size, x, y, maxX, maxY)
         
     def absorbEnergy(self, target: Fruit):
         """Prey absorb energy of Fruit"""
@@ -21,26 +22,29 @@ class Prey(Creature):
 
     def getReward(self):
         """Prey reward function"""
-        raise NotImplementedError()
+        return self.energyChange - self.threatDistChange + self.targetDistChange
 
-    def getState(self, creatures: list[Creature], fruits: list[Fruit]) -> Tuple[Tuple[Tuple[Creature | Fruit, float, float]], Tuple[Tuple[Creature, float, float]], Tuple[float, float, float, float], Tuple[float, float]]:
+    def getState(self, creatures: list[Creature], fruits: list[Fruit]) -> Tuple[Tuple[Tuple[float, float]], Tuple[Tuple[float, float]], Tuple[float, float, float, float], Tuple[float, float]]:
         """Returns a Tuple containing all information needed for Prey NN model
         First element:  2-tuple of tuples containing distX, distY to targets (e.g. [0][0][0] gets distance in X to first target)
         Second element: 2-tuple of tuples containing distX, distY to threats (e.g. [1][0][1] gets distance in Y to first threat)
         Third element:  4-tuple containing distances to walls in each direction (e.g. [2][0] gets distance to x=0)
         Fourth element: 2-tuple of current velX and velY (e.g. [3][0] gets velX)"""
-        targets: list[Fruit] = fruits.sort(key=self.getDistance)
-        threats: list[Predator] = list(c for c in creatures if isinstance(c, Predator)).sort(key=self.getDistance)
+        targets: list[Fruit] = copy(fruits)
+        targets.sort(key=self.getDistance)
         self.setTargetDistChange(targets)
-        self.setTargetDistChange(threats)
         self.lastTargets = targets
+
+        threats: list[Predator] = list(c for c in creatures if isinstance(c, Predator))
+        threats.sort(key=self.getDistance)
+        self.setTargetDistChange(threats)
 
         targetsValues, threatsValues = [], []
         # If target/threat exists then add distances, else add (0,0) which represents infinite distance
         for i in range(3):
-            targetsValues.append(self.getDistances[targets[i]] if len(targets) > i else (0, 0))
+            targetsValues.append(self.getDistances(targets[i]) if len(targets) > i else (0, 0))
         for i in range(3):
-            threatsValues.append(self.getDistances[threats[i]] if len(threats) > i else (0, 0))
+            threatsValues.append(self.getDistances(threats[i]) if len(threats) > i else (0, 0))
 
         targetsTuple = (targetsValues[0], targetsValues[1], targetsValues[2])
         threatsTuple = (threatsValues[0], threatsValues[1], threatsValues[2])
@@ -69,23 +73,17 @@ class Prey(Creature):
                 i += 1
         
         # Store Target Distances for next step's calculation
-        self.threatDistances.clear()
+        self.threatDistances = list(self.getDistance(t) for t in newThreats)
 
-        for t in newThreats:
-            self.threatDistances.append(self.getDistance(t))
-
-    def setTargetDistChange(self, newTargets: list[Fruit], targetsToCount=3):
+    def setTargetDistChange(self, newTargets: list[Fruit], targetsToCount=3, priority=2):
         """Sets self.targetDistChange to a value proportional to the sum of the top targetsToCount target distance changes, with closer targets being more heavily weighted."""
         self.targetDistChange = 0
         if len(self.targetDistances) > 0 and len(newTargets) > 0:
             i = 0
             while len(self.targetDistances) > i and len(newTargets) > i and targetsToCount > i:
-                scalingFactor = (targetsToCount - i) ** 2 # Closer targets are higher priority
+                scalingFactor = (targetsToCount - i) ** priority # Closer targets are higher priority
                 self.targetDistChange += scalingFactor * (self.getDistance(newTargets[i]) - self.targetDistances[i])
                 i += 1
         
         # Store Target Distances for next step's calculation
-        self.targetDistances.clear()
-
-        for t in newTargets:
-            self.targetDistances.append(self.getDistance(t))
+        self.targetDistances = list(self.getDistance(t) for t in newTargets)
